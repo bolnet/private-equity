@@ -1,59 +1,85 @@
-# Private-Equity MCP
+# Private Equity × AI
 
-> **Decision-Optimization Diagnostic + Cross-Portco Benchmarking — for Claude Code.**
+> **A working toolkit for private-equity firms who want to turn AI from deck-slide into measurable portfolio value.**
 
-A focused MCP server for private-equity workflows: ingest a portfolio company's
-operational data and identify the top repeatable, high-volume decisions being
-made badly (DX), then benchmark every portco against its fund peers (BX).
+Most "AI for PE" today is slides, vendor demos, and a 100-day plan template no one operationalizes. This is a shipped, runnable system that diagnoses where decisions are losing money inside a portco, benchmarks every portco against the rest of the fund, and feeds it back to the deal team and LPs in artifacts a partner can actually send.
 
-Extracted from the broader [bolnet/claude-finance](https://github.com/bolnet/claude-finance)
-repo so PE-specific code can ship and version independently.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
+[![Claude Code MCP](https://img.shields.io/badge/Claude%20Code-MCP%20server-purple)](https://docs.claude.com/en/docs/claude-code/mcp)
 
 ---
 
-## What you get
+## The problem
 
-- **Decision-Optimization Diagnostic (DX)** — `/diagnose-decisions` runs an
-  ingest → segment-stats → time-stability → counterfactual → evidence → memo
-  pipeline on a portco's CSV uploads. Produces an HTML report with up to 3
-  ranked, dollar-quantified decision opportunities + a JSON `OpportunityMap`
-  sidecar.
-- **Cross-Portco Benchmarking (BX)** — `/benchmark-corpus` ingests N
-  `OpportunityMap` JSONs into a corpus and renders an LP-facing benchmark
-  with rank table, archetype index, and peer groups.
-- **Time-series benchmarking** — `/benchmark-trend` snapshots quarterly
-  diagnostic runs and surfaces what was closed / new / persistent between
-  any two snapshots for a single portco.
-- **17 PE skills** — DD checklist, IC memo drafting, deal screening,
-  prospect scoring, public-comp analysis, returns analysis, unit
-  economics, value-creation plans, and more.
-- **18 slash commands** — every skill is reachable as a `/`-command.
+**Private equity is two AI cycles behind its own best portcos.** The value gets left on the table at three layers:
 
-## Demos (real public data, no synthetic generation)
+| Layer | What's broken today | What ships here |
+|---|---|---|
+| **Deal team** | DD memos hand-assembled; market scans take days; no consistent prospect scoring | `/dd-checklist`, `/ic-memo`, `/score-prospect`, `/screen-deal`, `/public-comps`, `/market-risk` |
+| **Portco operating** | Operating partners can't compare decisions across companies; AI roadmaps drift in a PDF | `/diagnose-decisions` (DX) — top 3 dollar-quantified decision opportunities from a portco's own data |
+| **Fund / LP** | No view of which portcos share the same leakage pattern; LP letters can't quantify operational alpha | `/benchmark-corpus` (BX) — fund-wide rank, archetype index, quarterly persistence |
 
-| Demo                | What it is                                              | Lines |
-|---------------------|---------------------------------------------------------|------:|
-| `lending_club`      | Real Lending Club 2015–2016 30k-loan slice (single portco)  |  60k |
-| `regional_lenders`  | The same source partitioned into 5 US-region "portcos" for BX | 60k |
-| `etelequote`        | Synthetic insurance B2C lead-routing (reference shape)  |    — |
-| `saas_pricing`      | Synthetic SaaS deal/discount data (reference shape)     |    — |
+---
 
-The DX `lending_b2c` template surfaces the classic sub-prime refi pattern
-(~$800k/yr identifiable on the single-portco demo). The BX corpus across the
-five regional portcos shows ~$3.2M/yr of fund-level identifiable impact, with
-**all three archetypes** (`pricing` × `selection` × `allocation`) appearing
-in 5 / 5 portcos — i.e. fund-wide themes, not one-off anomalies.
+## What's in the box
+
+### 1. Decision-Optimization Diagnostic (DX)
+Pandas-only pipeline that ingests a portco's CSVs and surfaces the top 3 **repeatable, high-volume decisions being made badly** — each with a dollar-quantified counterfactual, time-stability score, and row-level evidence.
+
+- `/diagnose-decisions` — ingest → segment-stats → time-stability → counterfactual → evidence → memo
+- Output: HTML report + `OpportunityMap` JSON sidecar
+- 3 vertical templates out of the box: `lending_b2c`, `saas_pricing`, `insurance_b2c`
+
+### 2. Cross-Portco Benchmarking (BX)
+Ingest N `OpportunityMap` JSONs from your portfolio and render an LP-grade benchmark.
+
+- `/benchmark-corpus` — rank table, archetype index (pricing × selection × allocation), peer groups by cosine similarity
+- `/benchmark-trend` — quarterly snapshots; closed / new / persistent deltas
+- Output: static HTML the deal partner drops straight into a quarterly LP letter
+
+### 3. AI-Readiness for PE
+- `/ai-readiness` — scores a portco across data, ops, and governance dimensions; outputs a 90-day plan
+- `/value-creation` — translates DX findings into a written value-creation plan
+- `/portfolio` — fund-level dashboard rolling up all portco snapshots
+
+### 4. The full skill library (17 skills, 18 slash commands)
+
+| Category | Skills |
+|---|---|
+| **Sourcing & screening** | deal-sourcing, deal-screening, prospect-scoring, pipeline-profiling |
+| **Diligence** | dd-checklist, dd-meeting-prep, public-comp-analysis, returns-analysis, unit-economics |
+| **IC / decision** | ic-memo, market-risk-scan, liquidity-risk |
+| **Portco operating** | decision-diagnostic, value-creation-plan, ai-readiness, portfolio-monitoring |
+| **Fund-level** | benchmarking |
+
+Every skill is reachable as a `/`-command in Claude Code; every command writes deterministic, auditable artifacts to `finance_output/`.
+
+---
+
+## Demo results — real public data
+
+Numbers, not adjectives.
+
+| Demo | Source | Lines | What it shows |
+|---|---|---:|---|
+| `lending_club` | Real Lending Club 2015–2016 30k-loan slice | ~60k | Single-portco DX surfaces the classic sub-prime refi pattern: **~$800k/yr identifiable** |
+| `regional_lenders` | Same source partitioned into 5 US-region "portcos" | ~60k | Cross-portco BX shows **~$3.2M/yr fund-level identifiable impact**, with all three archetypes appearing in **5 / 5 portcos** — fund-wide themes, not anomalies |
+| `etelequote` | Synthetic insurance B2C lead-routing | — | Reference shape for the `insurance_b2c` template |
+| `saas_pricing` | Synthetic SaaS deal/discount data | — | Reference shape for the `saas_pricing` template |
 
 ```bash
-# Single-portco DX
+# Single-portco DX on real Lending Club data
 python -m demo.lending_club.slice
-# Then: /diagnose-decisions on demo/lending_club/{loans,performance}.csv
+# In Claude Code: /diagnose-decisions on demo/lending_club/{loans,performance}.csv
 
-# 5-portco BX corpus
+# Five-portco fund-level BX corpus
 python -m demo.regional_lenders.slice
 python -m scripts.build_bx_corpus
 # Renders finance_output/bx_report_regional_lenders_demo.html
 ```
+
+---
 
 ## Install
 
@@ -65,11 +91,7 @@ source .venv/bin/activate
 pip install -e .
 ```
 
-## Use it
-
 ### As an MCP server (Claude Code)
-
-Add to `.mcp.json`:
 
 ```json
 {
@@ -83,7 +105,6 @@ Add to `.mcp.json`:
 ```
 
 Then in Claude Code:
-
 ```
 ❯ /diagnose-decisions
 Upload your portco's CSVs (e.g. loans.csv + performance.csv)…
@@ -95,11 +116,27 @@ Upload your portco's CSVs (e.g. loans.csv + performance.csv)…
 pe-mcp-web   # serves the upload UI at http://localhost:8765/app/
 ```
 
+Drag a portco's CSV bundle in, get the HTML report and JSON sidecar back. No data leaves your machine.
+
+---
+
+## Who this is for
+
+| Role | Where to start |
+|---|---|
+| **Operating partner** | `/diagnose-decisions` on one portco → 1-page memo for the board |
+| **Deal team** | `/dd-checklist` + `/score-prospect` + `/public-comps` on a live target |
+| **Fund principal / CIO** | `/benchmark-corpus` across all portcos → archetype rollup for the next IC |
+| **LP-facing partner** | `/benchmark-trend` quarterly → operational-alpha exhibit in the LP letter |
+| **Portco CEO / CFO** | `/ai-readiness` → 90-day plan grounded in *your* data, not a vendor pitch |
+
+---
+
 ## Architecture
 
 ```
 src/finance_mcp/
-├── dx/                    # Decision-Optimization Diagnostic — pandas-only
+├── dx/                    # Decision-Optimization Diagnostic — pandas-only, deterministic
 │   ├── ingest.py          # CSV → joined dataframe + template match
 │   ├── segment_stats.py   # group-by + rank by $ outcome
 │   ├── time_stability.py  # per-quarter persistence score
@@ -123,17 +160,30 @@ src/finance_mcp/
 └── web.py                 # Starlette upload UI for /diagnose-decisions
 ```
 
+Design principles: **deterministic core** (pandas, not LLMs, for the math), **auditable output** (every dollar number traces to row-level evidence), **air-gappable** (no portco data leaves the operator's machine), **extensible** (a vertical template is one Python file).
+
+---
+
+## Roadmap
+
+- More vertical templates: healthcare-services routing, industrial pricing, B2B SaaS retention
+- Snowflake / BigQuery direct ingest (in addition to CSV)
+- GP-portal mode: multi-tenant deployment so each portco only sees its own data; the GP sees the corpus
+- Audit trail export: signed JSON bundle for LP / IC reproducibility
+
+Issues and PRs welcome.
+
+---
+
 ## Requirements
 
 - Python 3.10+
-- Claude Code CLI
+- Claude Code CLI ([install](https://claude.com/claude-code))
 
 ## License
 
-MIT — see the upstream [bolnet/claude-finance](https://github.com/bolnet/claude-finance) repo for license terms (this is a focused subset).
+MIT. See [LICENSE](LICENSE).
 
 ## About
 
-Built by [Surendra Singh](https://www.linkedin.com/in/surendrasingh/). The PE
-module of the broader Claude Finance project, lifted out so private-equity
-operating partners can install it without the rest of the finance stack.
+Built and maintained by [Surendra Singh](https://www.linkedin.com/in/surendrasingh/).
