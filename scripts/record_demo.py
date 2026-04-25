@@ -1,21 +1,30 @@
 """
-Record a scripted walkthrough of the /diagnose-decisions upload UI with
-real Lending Club data. Produces a .webm file that can be converted to
-MP4 with ffmpeg.
+Record a scripted walkthrough of the /diagnose-decisions upload UI on
+real public data. Produces a .webm file that can be converted to MP4.
 
-Usage:
-    # Make sure the server is running first:
-    python -m finance_mcp.web 8765
+Two profiles ship — pick whichever you want to record:
 
-    # Then:
-    python scripts/record_demo.py
-    # Output: /tmp/claude-finance-demo/<hash>.webm
+    # 1. Make sure the server is running:
+    python -m finance_mcp.web 8765   # or:  pe-mcp-web
+
+    # 2. In another terminal:
+    python scripts/record_demo.py --profile lending   # default
+    python scripts/record_demo.py --profile yasserh
+
+    # Output: /tmp/pe-demo/<hash>.webm
+
+Convert to MP4 (one line printed at the end of the run):
+    ffmpeg -y -i /tmp/pe-demo/<hash>.webm \
+           -c:v libx264 -crf 20 -preset slow \
+           /tmp/pe-demo/<hash>.mp4
 """
 from __future__ import annotations
 
+import argparse
 import base64
 import sys
 import time
+from dataclasses import dataclass
 from pathlib import Path
 
 from playwright.sync_api import Page, sync_playwright
@@ -30,16 +39,16 @@ _CAPTION_JS = r"""
     <style>
       #__demo_caption_root {
         position: fixed; left: 50%; bottom: 36px; transform: translateX(-50%);
-        z-index: 999999; max-width: 820px; width: calc(100% - 48px);
-        pointer-events: none; font-family: 'DM Sans', -apple-system, sans-serif;
+        z-index: 999999; max-width: 860px; width: calc(100% - 48px);
+        pointer-events: none; font-family: 'Inter', -apple-system, sans-serif;
       }
       #__demo_caption_box {
-        background: rgba(10, 10, 11, 0.94);
-        border: 1px solid rgba(0, 212, 170, 0.4);
+        background: rgba(10, 12, 16, 0.94);
+        border: 1px solid rgba(245, 215, 110, 0.4);
         border-radius: 14px;
         padding: 14px 22px;
-        color: #f0f0f2;
-        box-shadow: 0 16px 48px rgba(0,0,0,0.45), 0 0 0 1px rgba(0,212,170,0.08);
+        color: #e6e9ef;
+        box-shadow: 0 16px 48px rgba(0,0,0,0.45), 0 0 0 1px rgba(245,215,110,0.08);
         backdrop-filter: blur(14px);
         opacity: 0; transform: translateY(18px);
         transition: opacity .42s ease, transform .42s ease;
@@ -48,13 +57,13 @@ _CAPTION_JS = r"""
       #__demo_caption_kicker {
         font-family: 'JetBrains Mono', monospace;
         font-size: 10.5px; letter-spacing: 0.18em; text-transform: uppercase;
-        color: #00d4aa; margin-bottom: 6px;
+        color: #f5d76e; margin-bottom: 6px;
       }
       #__demo_caption_text {
-        font-size: 17px; line-height: 1.45; color: #f0f0f2; font-weight: 500;
+        font-size: 17px; line-height: 1.45; color: #e6e9ef; font-weight: 500;
       }
       #__demo_caption_hint {
-        font-size: 13.5px; color: #94949e; margin-top: 6px; line-height: 1.45;
+        font-size: 13.5px; color: #9aa3b2; margin-top: 6px; line-height: 1.45;
       }
     </style>
     <div id="__demo_caption_box">
@@ -97,9 +106,9 @@ def set_caption(page: Page, kicker: str, text: str, hint: str = "") -> None:
 def drop_files_visibly(page: Page, zone_selector: str, file_paths: list[Path]) -> None:
     """
     Simulate a user dragging files onto a drop zone — unlike set_input_files,
-    this actually fires dragenter/dragover/drop DOM events, which triggers
-    the drop zone's :hover styling and ondrop handler, so the animation is
-    visible on camera.
+    this fires dragenter/dragover/drop DOM events, which triggers the drop
+    zone's hover styling and ondrop handler so the animation is visible on
+    camera.
     """
     payload = []
     for path in file_paths:
@@ -122,35 +131,173 @@ def drop_files_visibly(page: Page, zone_selector: str, file_paths: list[Path]) -
             decoded.forEach(f => dt.items.add(f));
             const zone = document.querySelector(selector);
 
-            // dragenter + dragover paint the accent-dim hover state
             zone.dispatchEvent(new DragEvent('dragenter', { bubbles: true, dataTransfer: dt }));
             zone.dispatchEvent(new DragEvent('dragover',  { bubbles: true, dataTransfer: dt }));
-            await new Promise(r => setTimeout(r, 900));   // hover hold — visible on video
+            await new Promise(r => setTimeout(r, 900));
             zone.dispatchEvent(new DragEvent('drop',      { bubbles: true, dataTransfer: dt }));
         }""",
         {"files": payload, "selector": zone_selector},
     )
 
-URL = "http://127.0.0.1:8765/"
+
+URL_APP = "http://127.0.0.1:8765/app/"
 REPO = Path(__file__).resolve().parent.parent
-LOANS = REPO / "demo" / "lending_club" / "loans.csv"
-PERF = REPO / "demo" / "lending_club" / "performance.csv"
-OUT = Path("/tmp/claude-finance-demo")
+OUT = Path("/tmp/pe-demo")
 OUT.mkdir(parents=True, exist_ok=True)
 
 
+@dataclass(frozen=True)
+class Profile:
+    """A demo profile — input CSVs + captions for the 8 scenes."""
+    name: str
+    portco_id: str
+    loans: Path
+    perf: Path
+    regen_hint: str
+    intro_kicker: str
+    intro_text: str
+    intro_hint: str
+    entities_text: str
+    entities_hint: str
+    finding_text: str
+    finding_hint: str
+    opp_text: str
+    opp_hint: str
+
+
+PROFILES: dict[str, Profile] = {
+    "lending": Profile(
+        name="lending",
+        portco_id="LendingCo",
+        loans=REPO / "demo" / "lending_club" / "loans.csv",
+        perf=REPO / "demo" / "lending_club" / "performance.csv",
+        regen_hint="python -m demo.lending_club.slice",
+        intro_kicker="PRIVATE EQUITY × AI",
+        intro_text="Decision-Optimization Diagnostic — runs locally.",
+        intro_hint=(
+            "Drop a portco's CSVs · pandas math · row-level evidence on "
+            "every dollar."
+        ),
+        entities_text=(
+            "loans.csv (underwriting) + performance.csv (servicing) "
+            "— joined on loan_id."
+        ),
+        entities_hint="Auto-matched to the lending_b2c vertical template.",
+        finding_text=(
+            "Annualized $ impact identified · ranked opportunities · "
+            "row-level evidence."
+        ),
+        finding_hint=(
+            "All on real Lending Club originations — public data, not "
+            "synthetic."
+        ),
+        opp_text=(
+            "Segment definition · annualized $ impact · persistence "
+            "quarters · counterfactual."
+        ),
+        opp_hint="Sub-prime grades × refi loans persistently lose money — quantified.",
+    ),
+    "hmda": Profile(
+        name="hmda",
+        portco_id="DCMortgage",
+        loans=REPO / "demo" / "hmda_dc" / "loans.csv",
+        perf=REPO / "demo" / "hmda_dc" / "performance.csv",
+        regen_hint=(
+            "curl -sSL -o /tmp/hmda_dc_2023.csv "
+            "'https://ffiec.cfpb.gov/v2/data-browser-api/view/csv"
+            "?years=2023&states=DC&actions_taken=1,3' && "
+            "python -m demo.hmda_dc.slice"
+        ),
+        intro_kicker="PRIVATE EQUITY × AI",
+        intro_text="DX on real CFPB HMDA data — Washington DC, 2023.",
+        intro_hint=(
+            "11.6k mortgage applications · public regulatory disclosure · "
+            "no synthetic outcomes."
+        ),
+        entities_text=(
+            "loans.csv (HMDA application data) + performance.csv "
+            "(modeled cashflows) — joined on loan_id."
+        ),
+        entities_hint=(
+            "Decision columns: loan_type · loan_purpose · MSA · "
+            "loan_product_type · lien_status."
+        ),
+        finding_text=(
+            "Adverse-selection clusters where denial cost + thin pricing "
+            "outweigh the booked spread."
+        ),
+        finding_hint=(
+            "Real DC mortgage applications · 2,994 denials · 8,616 "
+            "originations · pure CFPB data."
+        ),
+        opp_text=(
+            "Each opp surfaces a (purpose × MSA × product) cohort where "
+            "underwriting decisions are systematically poor."
+        ),
+        opp_hint=(
+            "Application-time decisions, dollar-quantified, "
+            "with row-level evidence."
+        ),
+    ),
+    "yasserh": Profile(
+        name="yasserh",
+        portco_id="MortgageCo",
+        loans=REPO / "demo" / "yasserh_mortgages" / "loans.csv",
+        perf=REPO / "demo" / "yasserh_mortgages" / "performance.csv",
+        regen_hint="python -m demo.yasserh_mortgages.slice",
+        intro_kicker="PRIVATE EQUITY × AI",
+        intro_text="DX on a real US specialty-mortgage book.",
+        intro_hint=(
+            "148,670 originations · CC0 public data · same engine, "
+            "different vertical."
+        ),
+        entities_text=(
+            "loans.csv (underwriting) + performance.csv (servicing) "
+            "— joined on loan_id."
+        ),
+        entities_hint=(
+            "Mapped onto lending_b2c — DX doesn't care about the source "
+            "format."
+        ),
+        finding_text=(
+            "Annualized $ impact identified · ranked opportunities · "
+            "row-level evidence."
+        ),
+        finding_hint=(
+            "On 30k real US mortgage originations · 24% default rate "
+            "· $1.1B at risk."
+        ),
+        opp_text=(
+            "Segment definition · annualized $ impact · persistence "
+            "quarters · counterfactual."
+        ),
+        opp_hint=(
+            "Adverse-selection clusters in loan_type × Region × "
+            "submission_channel — quantified."
+        ),
+    ),
+}
+
+
 def main() -> None:
-    if not LOANS.exists() or not PERF.exists():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--profile",
+        choices=sorted(PROFILES),
+        default="lending",
+        help="Which demo profile to record (default: lending)",
+    )
+    args = parser.parse_args()
+    profile = PROFILES[args.profile]
+
+    if not profile.loans.exists() or not profile.perf.exists():
         sys.exit(
-            f"Demo CSVs missing. Regenerate with: "
-            f"python -m demo.lending_club.slice\n"
-            f"Looking for: {LOANS} + {PERF}"
+            f"Demo CSVs missing for profile '{profile.name}'. Regenerate with:\n"
+            f"  {profile.regen_hint}\n"
+            f"Looking for: {profile.loans} + {profile.perf}"
         )
 
     with sync_playwright() as p:
-        # Headed so the browser window is visible while the recording runs —
-        # useful when the user wants to also screen-capture the whole OS or
-        # verify the walkthrough visually before shipping.
         browser = p.chromium.launch(headless=False, slow_mo=150)
         context = browser.new_context(
             viewport={"width": 1400, "height": 900},
@@ -159,108 +306,82 @@ def main() -> None:
         )
         page = context.new_page()
 
-        # ---- Scene 1: hero + intro caption (~7s) ----
-        page.goto(URL, wait_until="networkidle")
+        # ---- Scene 1: open /app/ — intro caption (~6s) ----
+        page.goto(URL_APP, wait_until="networkidle")
         set_caption(
             page,
-            "CLAUDE FINANCE",
-            "Institutional analytics in plain English.",
-            "40+ MCP tools · 21 slash commands · 15 PE workflows · open source.",
-        )
-        time.sleep(6.5)
-
-        # ---- Scene 2: scope to PE (~6s) ----
-        page.evaluate(
-            "document.querySelector('#commands').scrollIntoView({behavior:'smooth', block:'start'})"
-        )
-        set_caption(
-            page,
-            "TODAY'S FOCUS",
-            "Private Equity — 15 workflows for sourcing, DD, monitoring, and value creation.",
-            "We'll demo one module: the Decision-Optimization Diagnostic.",
+            profile.intro_kicker,
+            profile.intro_text,
+            profile.intro_hint,
         )
         time.sleep(6.0)
 
-        # ---- Scene 3: zoom on DX module card (~6s) ----
-        page.evaluate(
-            "document.querySelector('#modules').scrollIntoView({behavior:'smooth', block:'start'})"
-        )
-        set_caption(
-            page,
-            "DX · DECISION-OPTIMIZATION DIAGNOSTIC",
-            "Find cross-section failures that aggregate dashboards hide.",
-            "Output: a board-ready opportunity map with modeled EBITDA uplift per decision.",
-        )
-        time.sleep(6.0)
-
-        # ---- Scene 4: click Try it → /app/ (~3s) ----
-        page.locator(".module-try").first.click()
-        page.wait_for_url("**/app/")
-        set_caption(
-            page,
-            "RUNS LOCALLY",
-            "Drop your portfolio company's CSVs. Nothing leaves localhost.",
-            "Real demo data: 30,000 Lending Club loans, 2015–2016 vintage.",
-        )
-        time.sleep(3.0)
-
-        # ---- Scene 5: type portco + drag-and-drop (~7s) ----
+        # ---- Scene 2: type portco id (~4s) ----
         page.locator("#portcoId").click()
-        page.locator("#portcoId").type("LendingCo", delay=130)
-        time.sleep(1.0)
+        page.locator("#portcoId").type(profile.portco_id, delay=130)
         set_caption(
             page,
-            "TWO ENTITIES",
-            "loans.csv (underwriting) + performance.csv (servicing) — joined on loan_id.",
-            "Auto-matched to the lending_b2c template.",
+            "STEP 1 · IDENTIFY THE PORTCO",
+            "A label for this engagement — appears on the memo and the JSON sidecar.",
+            "",
         )
-        drop_files_visibly(page, "#dropZone", [LOANS, PERF])
         time.sleep(3.5)
 
-        # ---- Scene 6: pipeline animates (~5s) ----
+        # ---- Scene 3: drag-drop the CSVs (~6s) ----
+        set_caption(
+            page,
+            "STEP 2 · TWO ENTITIES",
+            profile.entities_text,
+            profile.entities_hint,
+        )
+        time.sleep(1.0)
+        drop_files_visibly(page, "#dropZone", [profile.loans, profile.perf])
+        time.sleep(4.0)
+
+        # ---- Scene 4: click Run, show pipeline (~10s) ----
         page.locator("#runBtn").click()
         set_caption(
             page,
-            "PIPELINE — 7 STAGES",
+            "STEP 3 · PIPELINE — 7 STAGES",
             "ingest → segment-stats → time-stability → counterfactual → evidence → memo → report",
-            "Pure pandas. No black boxes. Every stage is a dx_* MCP tool.",
+            "Pure pandas. No LLM does arithmetic. Every stage is a dx_* MCP tool.",
         )
         page.wait_for_selector(
-            "#resultSummary:has-text('projected impact')", timeout=60_000
+            "#resultSummary:has-text('projected impact')", timeout=120_000
         )
         time.sleep(2.0)
 
-        # ---- Scene 7: result summary (~5s) ----
+        # ---- Scene 5: result summary (~5s) ----
         page.evaluate(
             "document.querySelector('#result').scrollIntoView({behavior:'smooth', block:'start'})"
         )
         set_caption(
             page,
-            "FINDING",
-            "$796k/yr identified · 5.5% of EBITDA · 5 opportunities ranked.",
-            "All on real Lending Club originations — not synthetic.",
+            "STEP 4 · FINDING",
+            profile.finding_text,
+            profile.finding_hint,
         )
         time.sleep(5.5)
 
-        # ---- Scene 8: drill into the opportunity card (top-3 list) (~6s) ----
+        # ---- Scene 6: drill into the top opportunity card (~6s) ----
         page.evaluate(
             "(() => {"
             "  const f=document.querySelector('#reportFrame');"
             "  if (!f) return;"
             "  const doc=f.contentDocument;"
-            "  const opps=doc.querySelector('.opp');"
-            "  if (opps) opps.scrollIntoView({behavior:'smooth', block:'start'});"
+            "  const opp=doc.querySelector('.opp');"
+            "  if (opp) opp.scrollIntoView({behavior:'smooth', block:'start'});"
             "})()"
         )
         set_caption(
             page,
-            "EVERY OPPORTUNITY HAS",
-            "Segment definition · annualized $ impact · persistence quarters · counterfactual.",
-            "Sub-prime grades × refi loans persistently lose money — quantified.",
+            "STEP 5 · EVERY OPPORTUNITY HAS",
+            profile.opp_text,
+            profile.opp_hint,
         )
         time.sleep(6.5)
 
-        # ---- Scene 9: zoom into the memo prose (~7s) ----
+        # ---- Scene 7: zoom into the memo prose (~7s) ----
         page.evaluate(
             "(() => {"
             "  const f=document.querySelector('#reportFrame');"
@@ -272,29 +393,27 @@ def main() -> None:
         )
         set_caption(
             page,
-            "BOARD + OPERATOR MEMOS",
+            "STEP 6 · BOARD + OPERATOR MEMOS",
             "Each opp ships with two narrative views — the why, the counterfactual, the rollout.",
             "Defensible language a managing director can read into a board meeting.",
         )
         time.sleep(7.0)
 
-        # ---- Scene 10: closing + roadmap (~5s) ----
+        # ---- Scene 8: closing (~5s) ----
         page.evaluate(
             "document.querySelector('.head').scrollIntoView({behavior:'smooth', block:'start'})"
         )
         set_caption(
             page,
-            "PHASE 1 ROADMAP",
-            "BX cross-portco benchmarking · live SSE streaming · custom templates.",
-            "Ship the diagnostic → ship the next decision. Open source, MIT.",
+            "OPEN SOURCE · MIT · PANDAS-DETERMINISTIC",
+            "Two engines shipped: DX (decision diagnostic) + BX (cross-portco benchmark).",
+            "Plus a 17-command deal-team workbench. github.com/bolnet/private-equity",
         )
         time.sleep(5.0)
 
-        video_path = page.video.path() if page.video else None
         context.close()
         browser.close()
 
-    # After context.close(), the video is flushed to disk under OUT/.
     webms = sorted(OUT.glob("*.webm"), key=lambda p: p.stat().st_mtime)
     if not webms:
         sys.exit("Recording failed — no .webm found.")
