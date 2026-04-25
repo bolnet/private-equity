@@ -30,7 +30,10 @@ dataset, you edit that script — never run an ad-hoc Playwright session.
 
 ## Profiles (real public datasets)
 
-The same recorder script ships three profiles via `--profile`:
+The same recorder script ships five profiles via `--profile`, in two
+flavours:
+
+### DX profiles — upload-flow walkthroughs (need the local server)
 
 | Profile    | Dataset                                         | Source                | Auth     |
 |------------|-------------------------------------------------|-----------------------|----------|
@@ -38,20 +41,37 @@ The same recorder script ships three profiles via `--profile`:
 | `yasserh`  | Yasserh US mortgage default, 2019 (148k → 30k)  | Kaggle                | none*    |
 | `hmda`     | CFPB HMDA Washington DC, 2023 (11.6k)           | ffiec.cfpb.gov        | none     |
 
-\* Kaggle CLI works without an API key for many public datasets.
+### BX profiles — navigation-only walkthroughs of rendered fund reports (no server)
 
-Each profile has its own slice script that maps the source data onto the
-`lending_b2c` template and writes `loans.csv` + `performance.csv` under
-`demo/<profile>/`.
+| Profile           | Corpus                                                    | Portcos | Fund $       |
+|-------------------|-----------------------------------------------------------|--------:|--------------|
+| `bx-hmda-states`  | 5-state CFPB HMDA mortgage origination (DC·DE·MA·AZ·GA)   | 5       | $184M        |
+| `bx-mixed-fund`   | 7-portco mixed-vertical (LC regional + Yasserh + HMDA DC) | 7       | $1.14B       |
+
+\* Kaggle CLI works without an API key for many CC0 public datasets.
+
+Each DX profile has its own slice script that maps the source data onto
+the `lending_b2c` template and writes `loans.csv` + `performance.csv`
+under `demo/<profile>/`. Each BX profile points at a rendered HTML
+corpus report under `finance_output/`.
 
 ## Adding a new profile
 
+**For a DX profile** (upload flow):
 1. Create `demo/<your_profile>/slice.py` that writes `loans.csv` and
    `performance.csv` matching the `lending_b2c` schema (or another DX
    template).
 2. Add a new `Profile(...)` entry to the `PROFILES` dict in
    `scripts/record_demo.py` with the file paths and caption strings.
 3. Run: `python scripts/record_demo.py --profile <your_profile>`
+
+**For a BX profile** (corpus walkthrough):
+1. Build the corpus first — e.g. write a `scripts/build_bx_<your_corpus>.py`
+   that ingests N OpportunityMaps and renders `bx_report_<corpus_id>.html`.
+2. Add a new `BXProfile(...)` entry to the `BX_PROFILES` dict in
+   `scripts/record_demo.py` pointing at that HTML and providing the
+   8-scene caption strings.
+3. Run: `python scripts/record_demo.py --profile bx-<your_corpus>`
 
 ## The 8 scenes (all in `scripts/record_demo.py`)
 
