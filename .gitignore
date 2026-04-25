@@ -1,0 +1,69 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# Virtual envs
+.venv/
+venv/
+env/
+ENV/
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Secrets / local
+.env
+.env.*
+!.env.example
+
+# Claude / planning (local-only)
+.claude/
+.planning/
+
+# Generated outputs
+finance_output/
+.fastembed_cache/
+.playwright-mcp/
+
+# Memwright cache
+.memwright/
+MEMWRIGHT_CHANGES.md
+
+# Generated demo datasets (reproducible via demo/*/generate.py, seed=42)
+demo/etelequote/leads.csv
+demo/etelequote/policies.csv
+demo/etelequote/agents.csv
+demo/saas_pricing/deals.csv
+demo/saas_pricing/customers.csv
+demo/lending_club/loans.csv
+demo/lending_club/performance.csv
+demo/regional_lenders/*/loans.csv
+demo/regional_lenders/*/performance.csv
+
+# Root-level scratch artifacts (screenshots, scraped data, ad-hoc snapshots).
+# Anchored to repo root so legitimate images/JSON in docs/, src/, tests/ stay tracked.
+/*.png
+/politicians-*.json
+/portfolio-snapshot.md
+
+# Local-only docs (not for distribution)
+docs/superpowers/
+docs/system8_build_analysis_apr2026.md

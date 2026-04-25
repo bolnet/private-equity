@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "private-equity": {
+      "command": "python",
+      "args": ["-m", "finance_mcp.server"],
+      "env": {
+        "PYTHONUNBUFFERED": "1"
+      }
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "private-equity": {
+      "command": "python",
+      "args": ["-m", "finance_mcp.server"],
+      "_note": "Requires: pip install -e . from the bolnet/private-equity repo. See README for full install instructions."
+    }
+  }
+}

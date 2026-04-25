@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Finance — Decision-Optimization Diagnostic</title>
+<meta name="description" content="Upload portfolio-company CSVs and run the full DX diagnostic locally.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Instrument+Serif&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<nav class="topnav">
+  <div class="topnav-inner">
+    <a href="/app/" class="logo"><span class="dot"></span> Claude Finance <span class="tag">/diagnose-decisions</span></a>
+    <a href="https://github.com/bolnet/claude-finance" class="ghost">GitHub</a>
+  </div>
+</nav>
+
+<main class="page">
+  <header class="head">
+    <div class="eyebrow">Decision-Optimization Diagnostic</div>
+    <h1>Upload your portco data. <em>Ship the memo in minutes.</em></h1>
+    <p class="lede">Drop a portfolio company's CRM, ERP, or ops CSVs. We join, cross-section, stress-test for persistence, compute counterfactual uplift, and generate a board-ready opportunity map. Everything runs on your machine — no data leaves the localhost.</p>
+  </header>
+
+  <section class="panel" id="uploader">
+    <form id="uploadForm" autocomplete="off">
+      <label class="field">
+        <span class="field-label">Portfolio Company ID</span>
+        <input type="text" name="portco_id" id="portcoId" placeholder="acme_saas" maxlength="40">
+      </label>
+
+      <div class="drop" id="dropZone">
+        <input type="file" id="fileInput" name="files" multiple accept=".csv" hidden>
+        <div class="drop-inner">
+          <div class="drop-title">Drop CSV files here</div>
+          <div class="drop-hint">or <button type="button" id="browseBtn" class="link-btn">browse</button> — e.g., <code>loans.csv</code> + <code>performance.csv</code>, <code>leads.csv</code> + <code>policies.csv</code>, or <code>deals.csv</code> + <code>customers.csv</code></div>
+        </div>
+      </div>
+
+      <ul class="filelist" id="fileList" hidden></ul>
+
+      <div class="demo-row">
+        <span class="demo-label">No data? Try a demo:</span>
+        <button type="button" class="chip" data-demo="lending">lending_b2c (30k real loans)</button>
+        <button type="button" class="chip" data-demo="saas">saas_pricing (8k deals)</button>
+        <button type="button" class="chip" data-demo="insurance">insurance_b2c (4.8k leads)</button>
+      </div>
+
+      <div class="actions">
+        <button type="submit" id="runBtn" class="primary" disabled>Run diagnostic</button>
+        <button type="button" id="resetBtn" class="ghost" hidden>Reset</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="panel pipeline" id="pipeline" hidden>
+    <h2>Pipeline</h2>
+    <ol class="stages">
+      <li data-stage="ingest"><span class="stage-label">ingest</span><span class="stage-status">pending</span></li>
+      <li data-stage="segment_stats"><span class="stage-label">segment stats</span><span class="stage-status">pending</span></li>
+      <li data-stage="time_stability"><span class="stage-label">time stability</span><span class="stage-status">pending</span></li>
+      <li data-stage="counterfactual"><span class="stage-label">counterfactual</span><span class="stage-status">pending</span></li>
+      <li data-stage="evidence"><span class="stage-label">evidence</span><span class="stage-status">pending</span></li>
+      <li data-stage="memo"><span class="stage-label">memo</span><span class="stage-status">pending</span></li>
+      <li data-stage="report"><span class="stage-label">report</span><span class="stage-status">pending</span></li>
+    </ol>
+    <pre id="log" class="log"></pre>
+  </section>
+
+  <section class="panel result" id="result" hidden>
+    <div class="result-head">
+      <div>
+        <div class="eyebrow">Opportunity Map</div>
+        <h2 id="resultSummary">—</h2>
+      </div>
+      <a id="openReport" class="primary" target="_blank" rel="noreferrer">Open report →</a>
+    </div>
+    <iframe id="reportFrame" title="DX Report"></iframe>
+  </section>
+</main>
+
+<footer class="foot">
+  <div>Runs on your machine · MIT · <a href="https://github.com/bolnet/claude-finance">source</a></div>
+</footer>
+
+<script src="./app.js"></script>
+</body>
+</html>
