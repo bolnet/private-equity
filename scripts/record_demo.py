@@ -1,15 +1,23 @@
 """
-Record a scripted walkthrough of the /diagnose-decisions upload UI on
-real public data. Produces a .webm file that can be converted to MP4.
+Record a scripted walkthrough of the DX upload UI or the BX cross-portco
+benchmark report, on real public data. Produces a .webm file that can be
+converted to MP4.
 
-Two profiles ship — pick whichever you want to record:
+Profiles ship in two flavours:
 
-    # 1. Make sure the server is running:
+    DX (upload-driven, requires the local web server):
+        python scripts/record_demo.py --profile lending   # default
+        python scripts/record_demo.py --profile yasserh
+        python scripts/record_demo.py --profile hmda
+
+    BX (navigation-only over a rendered fund-level report, no server):
+        python scripts/record_demo.py --profile bx-hmda-states
+        python scripts/record_demo.py --profile bx-mixed-fund
+
+DX needs the server running first:
     python -m finance_mcp.web 8765   # or:  pe-mcp-web
 
-    # 2. In another terminal:
-    python scripts/record_demo.py --profile lending   # default
-    python scripts/record_demo.py --profile yasserh
+BX reads finance_output/bx_report_<corpus>.html via file://, no server.
 
     # Output: /tmp/pe-demo/<hash>.webm
 
@@ -148,7 +156,7 @@ OUT.mkdir(parents=True, exist_ok=True)
 
 @dataclass(frozen=True)
 class Profile:
-    """A demo profile — input CSVs + captions for the 8 scenes."""
+    """A DX upload-flow profile — input CSVs + captions for the 8 scenes."""
     name: str
     portco_id: str
     loans: Path
@@ -163,6 +171,127 @@ class Profile:
     finding_hint: str
     opp_text: str
     opp_hint: str
+    mode: str = "dx"  # "dx" | "bx"
+
+
+@dataclass(frozen=True)
+class BXProfile:
+    """A BX walkthrough profile — points at a rendered fund-level HTML report."""
+    name: str
+    report_path: Path
+    regen_hint: str
+    intro_kicker: str
+    intro_text: str
+    intro_hint: str
+    archetype_text: str
+    archetype_hint: str
+    rank_text: str
+    rank_hint: str
+    top_portco_text: str
+    top_portco_hint: str
+    peer_text: str
+    peer_hint: str
+    outro_text: str
+    outro_hint: str
+    mode: str = "bx"
+
+
+BX_PROFILES: dict[str, BXProfile] = {
+    "bx-hmda-states": BXProfile(
+        name="bx-hmda-states",
+        report_path=REPO / "finance_output" / "bx_report_hmda_states.html",
+        regen_hint="python -m scripts.build_bx_hmda_states",
+        intro_kicker="BX · CROSS-PORTCO BENCHMARK",
+        intro_text="A fund of 5 regional mortgage origination portcos.",
+        intro_hint=(
+            "DC · DE · MA · AZ · GA · all real CFPB HMDA 2023 · "
+            "$184M fund-wide identifiable."
+        ),
+        archetype_text=(
+            "Fund-wide archetype distribution — pricing × selection × "
+            "allocation, P10 / median / P90 across all 5 portcos."
+        ),
+        archetype_hint=(
+            "Same lending_b2c template applied to every portco · "
+            "apples-to-apples comparison."
+        ),
+        rank_text=(
+            "Fund-level rank table. Each portco scored against fund "
+            "mean, median, P10, P90."
+        ),
+        rank_hint=(
+            "Five mortgage markets ranked by total identifiable annual $ "
+            "impact · LP-grade exhibit."
+        ),
+        top_portco_text=(
+            "HMDA_GA leads the fund — $106M of identifiable impact "
+            "across pricing × selection × allocation."
+        ),
+        top_portco_hint=(
+            "153k mortgage applications · 17% denial rate · "
+            "concentration in B-grade 360-month."
+        ),
+        peer_text=(
+            "Peer groups by cosine similarity on archetype-profile shape."
+        ),
+        peer_hint=(
+            "Top-3 most similar portcos surface fund-wide themes — "
+            "patterns that repeat across markets, not one-off."
+        ),
+        outro_text=(
+            "Open source · MIT · pandas-deterministic. Same engine that "
+            "ran each portco's diagnostic."
+        ),
+        outro_hint="github.com/bolnet/private-equity",
+    ),
+    "bx-mixed-fund": BXProfile(
+        name="bx-mixed-fund",
+        report_path=REPO / "finance_output" / "bx_report_mixed_fund.html",
+        regen_hint="python -m scripts.build_bx_mixed_fund",
+        intro_kicker="BX · MIXED-VERTICAL FUND",
+        intro_text="7 portcos across consumer + mortgage lending.",
+        intro_hint=(
+            "5 Lending Club regional · 1 Yasserh mortgage · 1 HMDA DC · "
+            "all real public data."
+        ),
+        archetype_text=(
+            "Fund-wide archetype distribution shows pricing × selection × "
+            "allocation across both verticals."
+        ),
+        archetype_hint=(
+            "BX surfaces patterns that repeat across verticals — "
+            "not just within one."
+        ),
+        rank_text=(
+            "Fund-level rank table — mortgage portcos dominate consumer "
+            "by 100x because mortgage loan amounts are 100x bigger."
+        ),
+        rank_hint=(
+            "Honest cross-vertical observation — BX shows scale "
+            "differences a partner would miss in a manual review."
+        ),
+        top_portco_text=(
+            "MortgageCo leads at $1.1B · the cross-vertical lesson is "
+            "that mortgage scale dominates everything else."
+        ),
+        top_portco_hint=(
+            "30k real US mortgages · 24% default · loss concentration in "
+            "specific loan-type × region cells."
+        ),
+        peer_text=(
+            "Peer groups cluster portcos with similar archetype profiles."
+        ),
+        peer_hint=(
+            "Mortgage portcos cluster together · consumer-lending "
+            "regionals cluster together · same vertical patterns."
+        ),
+        outro_text=(
+            "Two engines · one toolchain · five real public datasets. "
+            "Same DX runs everywhere."
+        ),
+        outro_hint="github.com/bolnet/private-equity",
+    ),
+}
 
 
 PROFILES: dict[str, Profile] = {
@@ -279,17 +408,126 @@ PROFILES: dict[str, Profile] = {
 }
 
 
+def _run_recording(profile_name: str, scenes_fn) -> None:
+    """Wrap a scene callable in the headed-Chromium video-recording context.
+    `scenes_fn` takes a Page and runs the scripted scenes."""
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=False, slow_mo=150)
+        context = browser.new_context(
+            viewport={"width": 1400, "height": 900},
+            record_video_dir=str(OUT),
+            record_video_size={"width": 1400, "height": 900},
+        )
+        page = context.new_page()
+        scenes_fn(page)
+        context.close()
+        browser.close()
+    webms = sorted(OUT.glob("*.webm"), key=lambda p: p.stat().st_mtime)
+    if not webms:
+        sys.exit("Recording failed — no .webm found.")
+    latest = webms[-1]
+    print(f"[record · {profile_name}] Saved: {latest} ({latest.stat().st_size / 1e6:.1f} MB)")
+    print(
+        f"[record · {profile_name}] Convert to MP4 (optional): "
+        f"ffmpeg -y -i {latest} -c:v libx264 -crf 20 -preset slow "
+        f"{latest.with_suffix('.mp4')}"
+    )
+
+
+def _record_bx_walkthrough(profile: BXProfile, page: Page) -> None:
+    """8-scene scroll-through of a rendered BX corpus HTML report."""
+    if not profile.report_path.exists():
+        raise SystemExit(
+            f"BX report missing at {profile.report_path}. Build it with:\n"
+            f"  {profile.regen_hint}"
+        )
+    url = f"file://{profile.report_path.resolve()}"
+
+    # ---- Scene 1: open report — intro (~6s) ----
+    page.goto(url, wait_until="networkidle")
+    set_caption(page, profile.intro_kicker, profile.intro_text, profile.intro_hint)
+    time.sleep(6.0)
+
+    # ---- Scene 2: scroll to title H1 (~5s) ----
+    page.evaluate("document.querySelector('h1').scrollIntoView({behavior:'smooth', block:'start'})")
+    set_caption(page, "STEP 1 · FUND HEADLINE",
+                "Total portcos · total identifiable $ — the LP-letter top line.", "")
+    time.sleep(5.0)
+
+    # ---- Scene 3: archetype distribution (~7s) ----
+    page.evaluate(
+        "const els = document.querySelectorAll('h2');"
+        "for (const e of els) { if (e.textContent.includes('archetype')) "
+        "  { e.scrollIntoView({behavior:'smooth', block:'start'}); break; } }"
+    )
+    set_caption(page, "STEP 2 · ARCHETYPE DISTRIBUTION",
+                profile.archetype_text, profile.archetype_hint)
+    time.sleep(7.0)
+
+    # ---- Scene 4: rank table (~7s) ----
+    page.evaluate(
+        "const t = document.querySelector('.rank-tbl');"
+        "if (t) t.scrollIntoView({behavior:'smooth', block:'start'});"
+    )
+    set_caption(page, "STEP 3 · FUND-LEVEL RANK TABLE",
+                profile.rank_text, profile.rank_hint)
+    time.sleep(7.0)
+
+    # ---- Scene 5: highlight top portco row (~5s) ----
+    page.evaluate(
+        "const r = document.querySelectorAll('.rank-cell')[0];"
+        "if (r) { const tr = r.closest('tr'); if (tr) "
+        "  { tr.style.background = 'rgba(245,215,110,0.12)'; "
+        "    tr.scrollIntoView({behavior:'smooth', block:'center'}); } }"
+    )
+    set_caption(page, "STEP 4 · TOP PORTCO",
+                profile.top_portco_text, profile.top_portco_hint)
+    time.sleep(5.0)
+
+    # ---- Scene 6: peer groups (~6s) ----
+    page.evaluate(
+        "const els = document.querySelectorAll('h2');"
+        "for (const e of els) { if (e.textContent.toLowerCase().includes('peer')) "
+        "  { e.scrollIntoView({behavior:'smooth', block:'start'}); break; } }"
+    )
+    set_caption(page, "STEP 5 · PEER GROUPS",
+                profile.peer_text, profile.peer_hint)
+    time.sleep(6.0)
+
+    # ---- Scene 7: highlight a peer card (~5s) ----
+    page.evaluate(
+        "const c = document.querySelector('.peer-card');"
+        "if (c) { c.style.outline = '2px solid rgba(245,215,110,0.5)'; "
+        "  c.scrollIntoView({behavior:'smooth', block:'center'}); }"
+    )
+    set_caption(page, "STEP 6 · ONE PEER GROUP",
+                "Each card lists the 3 most-similar portcos by archetype-profile cosine.",
+                "Patterns that repeat across portcos are fund-wide themes.")
+    time.sleep(5.0)
+
+    # ---- Scene 8: scroll back to top — outro (~5s) ----
+    page.evaluate("window.scrollTo({top:0, behavior:'smooth'})")
+    set_caption(page, "OPEN SOURCE · MIT", profile.outro_text, profile.outro_hint)
+    time.sleep(5.0)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
+    all_profiles = sorted(list(PROFILES) + list(BX_PROFILES))
     parser.add_argument(
         "--profile",
-        choices=sorted(PROFILES),
+        choices=all_profiles,
         default="lending",
         help="Which demo profile to record (default: lending)",
     )
     args = parser.parse_args()
-    profile = PROFILES[args.profile]
 
+    if args.profile in BX_PROFILES:
+        bx_profile = BX_PROFILES[args.profile]
+        _run_recording(args.profile, lambda page: _record_bx_walkthrough(bx_profile, page))
+        return
+
+    profile = PROFILES[args.profile]
     if not profile.loans.exists() or not profile.perf.exists():
         sys.exit(
             f"Demo CSVs missing for profile '{profile.name}'. Regenerate with:\n"

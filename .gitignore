@@ -73,10 +73,11 @@ docs/system8_build_analysis_apr2026.md
 /tmp/pe-demo/
 
 # Generated demo CSVs (regenerable from each demo's slice script)
-demo/*/loans.csv
-demo/*/performance.csv
-demo/*/leads.csv
-demo/*/policies.csv
-demo/*/agents.csv
-demo/*/deals.csv
-demo/*/customers.csv
+# Use ** so the pattern catches nested layouts like demo/hmda_states/<state>/loans.csv
+demo/**/loans.csv
+demo/**/performance.csv
+demo/**/leads.csv
+demo/**/policies.csv
+demo/**/agents.csv
+demo/**/deals.csv
+demo/**/customers.csv
