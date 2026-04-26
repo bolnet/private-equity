@@ -32,11 +32,15 @@ from finance_mcp.dx import (
     dx_segment_stats,
     dx_time_stability,
 )
+from finance_mcp.agent_sprawl import audit_agents
 from finance_mcp.cim import cim_analyze
+from finance_mcp.ddq import ddq_respond
 from finance_mcp.eu_ai_act import ai_act_audit
 from finance_mcp.eval import eval_pe_output
 from finance_mcp.explainer import explain_decision
 from finance_mcp.normalize import normalize_portco
+from finance_mcp.plan_drift import track_plan_drift
+from finance_mcp.procurement import benchmark_vendors
 from finance_mcp.seller_pack import exit_proof_pack
 
 mcp = FastMCP("Private-Equity MCP Server")
@@ -67,6 +71,18 @@ mcp.add_tool(ai_act_audit)
 
 # Portfolio Normalization — N portco CSVs in different formats → unified schema
 mcp.add_tool(normalize_portco)
+
+# DDQ Automation — first-draft ILPA-style answers from the fund knowledge base
+mcp.add_tool(ddq_respond)
+
+# Procurement Benchmarking — cross-portco vendor price variance (USAspending data)
+mcp.add_tool(benchmark_vendors)
+
+# 100-Day Plan Drift — initiative KPIs vs SEC EDGAR actuals, ranked by recoverable EBITDA
+mcp.add_tool(track_plan_drift)
+
+# Agent Sprawl Auditor — inventory + zombie/runaway/misaligned flags + prune savings
+mcp.add_tool(audit_agents)
 
 # Benchmarking (BX) — cross-portco + within-portco time-series
 mcp.add_tool(bx_ingest_corpus)
