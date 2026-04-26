@@ -32,6 +32,12 @@ from finance_mcp.dx import (
     dx_segment_stats,
     dx_time_stability,
 )
+from finance_mcp.cim import cim_analyze
+from finance_mcp.eu_ai_act import ai_act_audit
+from finance_mcp.eval import eval_pe_output
+from finance_mcp.explainer import explain_decision
+from finance_mcp.normalize import normalize_portco
+from finance_mcp.seller_pack import exit_proof_pack
 
 mcp = FastMCP("Private-Equity MCP Server")
 
@@ -43,6 +49,24 @@ mcp.add_tool(dx_counterfactual)
 mcp.add_tool(dx_evidence_rows)
 mcp.add_tool(dx_memo)
 mcp.add_tool(dx_report)
+
+# Model-to-Narrative — turns OpportunityMaps into board memos
+mcp.add_tool(explain_decision)
+
+# CIM Red-Flag Extractor — runs heuristic diligence flags over a SEC filing
+mcp.add_tool(cim_analyze)
+
+# LLM Eval for PE — scores any PE doc AI output against its source ground truth
+mcp.add_tool(eval_pe_output)
+
+# Seller-Side Diligence Pack — exit-prep AI EBITDA proof pack with sensitivity
+mcp.add_tool(exit_proof_pack)
+
+# EU AI Act Compliance — Article 6 classification + per-Article doc skeleton
+mcp.add_tool(ai_act_audit)
+
+# Portfolio Normalization — N portco CSVs in different formats → unified schema
+mcp.add_tool(normalize_portco)
 
 # Benchmarking (BX) — cross-portco + within-portco time-series
 mcp.add_tool(bx_ingest_corpus)
