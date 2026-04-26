@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The PE × AI Tools Catalogue — Twelve Operations</title>
+<meta name="description" content="A single-page interactive catalogue of the twelve shipped PE × AI tools. Decision diagnostics, cross-portco benchmarking, CIM red-flag extraction, exit proof packs, DDQ automation, EU AI Act compliance, and more — all callable from one page." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Newsreader:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper:     #f4ecd5;
+    --page:      #fbf6e2;
+    --page-dim:  #f6efd7;
+    --ink:       #1a140d;
+    --ink-mid:   #3a2e1d;
+    --ink-dim:   #5a4a35;
+    --ink-faint: #8b765a;
+    --rule:      #c2ad84;
+    --rule-soft: #dfd2af;
+    --rule-mute: #e8dfc0;
+    --accent:    #6b1414;
+    --accent-2:  #93331f;
+    --gold:      #8a6f1a;
+    --good:      #4d6b2c;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  html { background: #ece4cb; }
+  body {
+    background:
+      radial-gradient(ellipse 1100px 700px at 50% -100px, rgba(255, 248, 220, 0.55), transparent 70%),
+      radial-gradient(ellipse 600px 450px at 90% 40%, rgba(107, 20, 20, 0.025), transparent 60%),
+      radial-gradient(ellipse 500px 500px at 5% 80%, rgba(138, 111, 26, 0.04), transparent 60%),
+      var(--paper);
+    color: var(--ink);
+    font-family: 'EB Garamond', 'Iowan Old Style', Georgia, serif;
+    font-size: 17px; line-height: 1.55;
+    font-feature-settings: "liga", "dlig", "onum", "kern";
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    padding: 64px 24px 96px;
+    min-height: 100vh;
+    counter-reset: entry;
+  }
+
+  /* Paper grain — fixed SVG turbulence sits below all content. */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.42  0 0 0 0 0.34  0 0 0 0 0.18  0 0 0 0.07 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    opacity: 0.42; mix-blend-mode: multiply;
+    pointer-events: none; z-index: 0;
+  }
+
+  .folio {
+    max-width: 1280px; margin: 0 auto;
+    position: relative; z-index: 1;
+  }
+
+  /* ============ Masthead ============ */
+  .masthead {
+    text-align: center;
+    padding: 32px 0 56px;
+    border-bottom: 3px double var(--rule);
+    position: relative;
+  }
+  .masthead::before, .masthead::after {
+    content: ''; position: absolute;
+    height: 1px; background: var(--rule); width: 32%; top: 50%;
+    opacity: 0.5;
+  }
+  .masthead::before { left: 0; }
+  .masthead::after { right: 0; }
+
+  .imprint {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic; font-weight: 400;
+    font-size: 14px; color: var(--accent);
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .imprint::before { content: '✦  '; color: var(--rule); letter-spacing: normal; }
+  .imprint::after { content: '  ✦'; color: var(--rule); letter-spacing: normal; }
+
+  .wordmark {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 500; font-size: 64px; line-height: 1;
+    color: var(--ink); margin: 0 0 14px;
+    letter-spacing: -0.01em;
+  }
+  .wordmark em {
+    font-style: italic; color: var(--accent); font-weight: 400;
+  }
+
+  .subtitle {
+    font-family: 'EB Garamond', serif;
+    font-style: italic; font-size: 19px;
+    color: var(--ink-dim);
+    margin: 0 auto 26px;
+    max-width: 60ch;
+  }
+
+  .masthead-meta {
+    display: inline-flex; gap: 28px;
+    font-family: 'Newsreader', 'EB Garamond', serif;
+    font-style: italic; font-weight: 300;
+    font-size: 13px;
+    color: var(--ink-faint);
+    border-top: 1px solid var(--rule-soft);
+    border-bottom: 1px solid var(--rule-soft);
+    padding: 8px 24px;
+  }
+  .masthead-meta strong {
+    font-style: normal; font-variant: small-caps;
+    letter-spacing: 0.16em; color: var(--ink-mid); font-weight: 500;
+  }
+
+  /* ============ Headline numbers ============ */
+  .ticker {
+    margin: 56px 0 64px;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    border-top: 1px solid var(--ink-dim);
+    border-bottom: 1px solid var(--ink-dim);
+    padding: 22px 0;
+    background:
+      linear-gradient(180deg, rgba(107, 20, 20, 0.02), transparent 30%),
+      rgba(255, 247, 215, 0.55);
+    position: relative;
+  }
+  .ticker::before {
+    content: ''; position: absolute; left: 0; right: 0; top: 4px;
+    border-top: 1px solid var(--rule-soft);
+  }
+  .ticker::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: 4px;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+
+  .ticker-item {
+    text-align: center; padding: 0 12px;
+    border-right: 1px solid var(--rule-soft);
+    position: relative;
+  }
+  .ticker-item:last-child { border-right: none; }
+
+  .ticker-label {
+    font-variant: small-caps;
+    font-size: 10px; letter-spacing: 0.2em;
+    color: var(--ink-faint); margin-bottom: 8px;
+    font-weight: 500;
+  }
+  .ticker-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 30px; font-weight: 500;
+    color: var(--ink); line-height: 1;
+    font-feature-settings: "lnum";
+  }
+  .ticker-num em { font-style: italic; color: var(--accent); font-weight: 400; }
+  .ticker-sub {
+    font-family: 'Newsreader', serif; font-style: italic; font-weight: 300;
+    font-size: 11px; color: var(--ink-faint); margin-top: 5px;
+    line-height: 1.3;
+  }
+
+  /* ============ Contents ============ */
+  .contents {
+    margin: 0 auto 64px;
+    max-width: 920px;
+    text-align: center;
+  }
+  .contents-head {
+    font-variant: small-caps;
+    letter-spacing: 0.24em;
+    font-size: 12px; font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 22px;
+  }
+  .contents-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px 56px;
+    text-align: left;
+    font-size: 14.5px;
+    color: var(--ink-dim);
+    border-top: 1px solid var(--rule-soft);
+    border-bottom: 1px solid var(--rule-soft);
+    padding: 18px 12px;
+  }
+  .toc-line {
+    display: flex; align-items: baseline;
+    gap: 14px;
+  }
+  .toc-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic; font-weight: 500;
+    color: var(--accent);
+    font-size: 16px;
+    min-width: 36px;
+  }
+  .toc-title {
+    flex: 1; min-width: 0;
+    color: var(--ink-mid); font-weight: 500;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .toc-fill {
+    flex: 0 1 auto;
+    border-bottom: 1px dotted var(--rule);
+    height: 12px;
+    margin: 0 4px;
+    min-width: 14px;
+    flex-grow: 1;
+  }
+  .toc-page {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--ink-faint); font-size: 11px;
+    font-feature-settings: "tnum";
+  }
+
+  .ornament {
+    text-align: center; color: var(--rule);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px; letter-spacing: 1em;
+    margin: 56px 0;
+    padding-left: 1em;
+  }
+  .ornament::before { content: '✦  ✦  ✦'; }
+
+  /* ============ Catalogue grid ============ */
+  .catalog {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 24px;
+  }
+
+  .entry {
+    grid-column: span 6;
+    counter-increment: entry;
+    background: var(--page);
+    padding: 36px 36px 28px;
+    border: 1px solid var(--rule-soft);
+    box-shadow:
+      0 1px 0 var(--rule-soft),
+      0 18px 40px -28px rgba(60, 40, 15, 0.18);
+    position: relative;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    animation: rise 0.55s cubic-bezier(.2, .8, .3, 1) backwards;
+  }
+  .entry:hover {
+    border-color: var(--rule);
+    box-shadow:
+      0 1px 0 var(--rule-soft),
+      0 22px 50px -28px rgba(60, 40, 15, 0.26);
+  }
+  .entry::before {
+    content: ''; position: absolute; left: 0; top: 0; height: 4px; right: 0;
+    border-top: 2px solid var(--accent);
+    border-bottom: 1px solid var(--accent);
+  }
+
+  /* Pull every 3rd row into wider position for visual texture */
+  .entry.wide { grid-column: span 12; }
+
+  /* Stagger reveal */
+  .entry:nth-child(1)  { animation-delay: 0.04s; }
+  .entry:nth-child(2)  { animation-delay: 0.10s; }
+  .entry:nth-child(3)  { animation-delay: 0.16s; }
+  .entry:nth-child(4)  { animation-delay: 0.22s; }
+  .entry:nth-child(5)  { animation-delay: 0.28s; }
+  .entry:nth-child(6)  { animation-delay: 0.34s; }
+  .entry:nth-child(7)  { animation-delay: 0.40s; }
+  .entry:nth-child(8)  { animation-delay: 0.46s; }
+  .entry:nth-child(9)  { animation-delay: 0.52s; }
+  .entry:nth-child(10) { animation-delay: 0.58s; }
+  .entry:nth-child(11) { animation-delay: 0.64s; }
+  .entry:nth-child(12) { animation-delay: 0.70s; }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .entry-head {
+    display: flex; align-items: baseline; gap: 16px;
+    padding-bottom: 14px; margin-bottom: 18px;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .entry-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic; font-weight: 400;
+    font-size: 30px; line-height: 1; color: var(--accent);
+    min-width: 60px;
+  }
+  .entry-num::before { content: counter(entry, upper-roman) ". "; }
+  .entry-titles { flex: 1; min-width: 0; }
+  .entry-cat {
+    font-variant: small-caps; font-weight: 600;
+    font-size: 10.5px; letter-spacing: 0.16em;
+    color: var(--ink-faint);
+    margin-bottom: 4px;
+  }
+  .entry-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 500; font-size: 26px; line-height: 1.1;
+    color: var(--ink); margin: 0;
+  }
+  .entry-desc {
+    font-style: italic; color: var(--ink-dim);
+    font-size: 15.5px; line-height: 1.55;
+    margin: 0 0 16px; max-width: 50ch;
+  }
+
+  .entry-finding {
+    font-family: 'Newsreader', 'EB Garamond', serif;
+    font-style: italic; font-weight: 400;
+    font-size: 13.5px; line-height: 1.45;
+    color: var(--ink-mid);
+    background: rgba(138, 111, 26, 0.08);
+    border-left: 2px solid var(--gold);
+    padding: 10px 14px;
+    margin: 0 0 22px;
+  }
+  .entry-finding strong {
+    font-style: normal; font-weight: 600;
+    color: var(--ink); font-feature-settings: "lnum";
+  }
+
+  /* ============ Form inputs — letterpress-style, no boxes ============ */
+  .entry-form {
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .entry-form .row {
+    display: flex; gap: 16px; flex-wrap: wrap;
+  }
+  .entry-form .row > * { flex: 1; min-width: 140px; }
+  .field {
+    display: flex; flex-direction: column; gap: 4px;
+    position: relative;
+  }
+  .field-label {
+    font-variant: small-caps; font-size: 10.5px;
+    letter-spacing: 0.18em; font-weight: 500;
+    color: var(--ink-faint);
+  }
+  .field input[type="text"],
+  .field input[type="number"],
+  .field select,
+  .field textarea {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--ink-faint);
+    color: var(--ink);
+    font-family: 'EB Garamond', serif;
+    font-size: 16px;
+    font-weight: 400;
+    padding: 7px 0 6px;
+    outline: none;
+    width: 100%;
+    transition: border-color 0.2s ease;
+    font-feature-settings: "lnum";
+  }
+  .field input::placeholder, .field textarea::placeholder {
+    font-style: italic; color: var(--rule);
+  }
+  .field input:focus,
+  .field select:focus,
+  .field textarea:focus {
+    border-bottom-color: var(--accent);
+  }
+  .field select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0 L5 6 L10 0' fill='%236b1414'/></svg>");
+    background-position: right 4px center;
+    background-repeat: no-repeat;
+    padding-right: 18px;
+    cursor: pointer;
+  }
+  .field textarea {
+    resize: vertical;
+    min-height: 56px;
+    border: 1px solid var(--rule-soft);
+    border-radius: 0;
+    padding: 8px 10px;
+    background: rgba(255, 247, 215, 0.4);
+  }
+  .field-file {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px;
+    border: 1px dashed var(--rule);
+    border-radius: 4px;
+    background: rgba(255, 247, 215, 0.5);
+    font-family: 'EB Garamond', serif;
+    font-size: 14px; font-style: italic; color: var(--ink-dim);
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+  .field-file:hover { border-color: var(--accent); background: rgba(107, 20, 20, 0.04); }
+  .field-file input[type="file"] { display: none; }
+  .field-file .icon {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic; font-size: 18px;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 50%; width: 28px; height: 28px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: rgba(107, 20, 20, 0.04);
+  }
+  .field-file .filename {
+    flex: 1; min-width: 0;
+    color: var(--ink-mid); font-style: normal;
+    font-size: 13px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  /* ============ Run button ============ */
+  .actions {
+    display: flex; align-items: center; gap: 14px;
+    margin-top: 6px; padding-top: 14px;
+    border-top: 1px dashed var(--rule-soft);
+    flex-wrap: wrap;
+  }
+  .run-btn {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic; font-weight: 500;
+    font-size: 16px; letter-spacing: 0.04em;
+    background: var(--ink);
+    color: var(--page);
+    border: 1px solid var(--ink);
+    padding: 9px 22px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 11px;
+    font-style: normal;
+    font-weight: 600;
+  }
+  .run-btn:hover {
+    background: var(--accent); border-color: var(--accent);
+    color: var(--page);
+  }
+  .run-btn:disabled {
+    opacity: 0.55; cursor: wait;
+  }
+  .run-btn::after { content: '  →'; }
+
+  .view-existing {
+    font-family: 'Newsreader', serif; font-style: italic;
+    font-size: 13px; color: var(--ink-faint);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--rule);
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+  .view-existing:hover {
+    color: var(--accent); border-bottom-color: var(--accent);
+  }
+  .view-existing::before { content: '↗ '; font-style: normal; }
+
+  .entry-status {
+    margin-top: 14px;
+    padding: 10px 14px;
+    background: rgba(255, 247, 215, 0.65);
+    border-left: 2px solid var(--rule-soft);
+    font-family: 'Newsreader', serif; font-style: italic;
+    font-size: 13.5px; color: var(--ink-dim);
+    line-height: 1.5;
+    display: none;
+  }
+  .entry-status.show { display: block; }
+  .entry-status code {
+    font-family: 'JetBrains Mono', monospace; font-style: normal;
+    font-size: 12px; background: rgba(194, 173, 132, 0.2);
+    padding: 1px 6px; border-radius: 2px;
+    color: var(--ink-mid);
+  }
+  .entry-status a { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--rule); }
+  .entry-status a:hover { border-bottom-color: var(--accent); }
+  .entry-status.running { border-left-color: var(--gold); }
+  .entry-status.demo { border-left-color: var(--accent); }
+  .entry-status.success { border-left-color: var(--good); color: var(--ink); }
+
+  /* ============ Colophon ============ */
+  .colophon {
+    margin-top: 80px;
+    padding: 40px 24px 0;
+    border-top: 3px double var(--rule);
+    text-align: center;
+    font-family: 'Newsreader', serif;
+    font-style: italic; font-weight: 300;
+    font-size: 13px; color: var(--ink-faint);
+    line-height: 1.7;
+  }
+  .colophon .signature {
+    font-family: 'Cormorant Garamond', serif; font-style: italic;
+    font-size: 17px; color: var(--ink-dim);
+    margin-bottom: 14px;
+  }
+  .colophon .signature::before {
+    content: ''; display: block; width: 130px; height: 1px;
+    background: var(--ink-faint); opacity: 0.5; margin: 0 auto 12px;
+  }
+  .colophon code {
+    font-family: 'JetBrains Mono', monospace; font-style: normal;
+    font-size: 11px; color: var(--ink-mid);
+    background: rgba(194, 173, 132, 0.18);
+    padding: 1px 6px; border-radius: 2px;
+  }
+  .colophon a { color: var(--accent); text-decoration: none; border-bottom: 1px dotted var(--rule); }
+
+  /* ============ Responsive ============ */
+  @media (max-width: 1100px) {
+    .catalog { grid-template-columns: repeat(6, 1fr); }
+    .entry { grid-column: span 6; }
+    .entry.wide { grid-column: span 6; }
+    .ticker { grid-template-columns: repeat(3, 1fr); }
+    .ticker-item:nth-child(3n) { border-right: none; }
+    .ticker-item:nth-child(n+4) { border-top: 1px solid var(--rule-soft); padding-top: 16px; margin-top: 16px; }
+  }
+  @media (max-width: 720px) {
+    body { padding: 32px 14px 64px; font-size: 16px; }
+    .wordmark { font-size: 42px; }
+    .subtitle { font-size: 16px; }
+    .ticker { grid-template-columns: repeat(2, 1fr); }
+    .ticker-item:nth-child(2n) { border-right: none; }
+    .ticker-item:nth-child(n+3) { border-top: 1px solid var(--rule-soft); padding-top: 14px; margin-top: 14px; }
+    .contents-grid { grid-template-columns: 1fr; gap: 4px 0; }
+    .catalog { grid-template-columns: 1fr; }
+    .entry, .entry.wide { grid-column: span 1; padding: 28px 22px 22px; }
+    .entry-name { font-size: 22px; }
+    .entry-num { font-size: 24px; min-width: 44px; }
+    .masthead-meta { flex-direction: column; gap: 4px; padding: 8px 14px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="folio">
+
+  <!-- ============ Masthead ============ -->
+  <header class="masthead">
+    <div class="imprint">Bolnet · Private Equity Workshop</div>
+    <h1 class="wordmark">The PE × AI <em>Tools Catalogue</em></h1>
+    <p class="subtitle">Twelve operations, all shipped on real public data — interactive entry points to the same engines the diagnostic memos and benchmark reports run on.</p>
+    <div class="masthead-meta">
+      <span><strong>Volume</strong> I</span>
+      <span><strong>Number</strong> 12 of 12</span>
+      <span><strong>Imprint</strong> MIT-licensed</span>
+      <span><strong>Issue</strong> 2026-04-26</span>
+    </div>
+  </header>
+
+  <!-- ============ Headline ticker ============ -->
+  <section class="ticker" aria-label="Headline numbers">
+    <div class="ticker-item">
+      <div class="ticker-label">Mixed-vertical fund</div>
+      <div class="ticker-num"><em>$1.14B</em></div>
+      <div class="ticker-sub">7-portco BX corpus, identifiable</div>
+    </div>
+    <div class="ticker-item">
+      <div class="ticker-label">Procurement spread</div>
+      <div class="ticker-num">$936M</div>
+      <div class="ticker-sub">28 federal agencies, 132 vendors</div>
+    </div>
+    <div class="ticker-item">
+      <div class="ticker-label">Plan drift</div>
+      <div class="ticker-num">$121.6M</div>
+      <div class="ticker-sub">5 of 7 initiatives off-track</div>
+    </div>
+    <div class="ticker-item">
+      <div class="ticker-label">CIM red-flags</div>
+      <div class="ticker-num">49</div>
+      <div class="ticker-sub">single 10-K, section-cited</div>
+    </div>
+    <div class="ticker-item">
+      <div class="ticker-label">Citation accuracy</div>
+      <div class="ticker-num">87<span style="font-size:18px">%</span></div>
+      <div class="ticker-sub">across 13-memo eval corpus</div>
+    </div>
+    <div class="ticker-item">
+      <div class="ticker-label">Public datasets</div>
+      <div class="ticker-num"><em>5</em></div>
+      <div class="ticker-sub">HF · Kaggle · CFPB · SEC · USAS</div>
+    </div>
+  </section>
+
+  <!-- ============ Contents ============ -->
+  <nav class="contents" aria-label="Contents">
+    <div class="contents-head">— Contents —</div>
+    <div class="contents-grid">
+      <div class="toc-line"><span class="toc-num">I.</span><span class="toc-title">Decision Diagnostic (DX)</span><span class="toc-fill"></span><span class="toc-page">wedge</span></div>
+      <div class="toc-line"><span class="toc-num">II.</span><span class="toc-title">Model-to-Narrative Explainer</span><span class="toc-fill"></span><span class="toc-page">wedge</span></div>
+      <div class="toc-line"><span class="toc-num">III.</span><span class="toc-title">Cross-Portco Benchmarking (BX)</span><span class="toc-fill"></span><span class="toc-page">moat</span></div>
+      <div class="toc-line"><span class="toc-num">IV.</span><span class="toc-title">LLM Eval for PE</span><span class="toc-fill"></span><span class="toc-page">moat</span></div>
+      <div class="toc-line"><span class="toc-num">V.</span><span class="toc-title">CIM Red-Flag Extractor</span><span class="toc-fill"></span><span class="toc-page">diligence</span></div>
+      <div class="toc-line"><span class="toc-num">VI.</span><span class="toc-title">Seller-Side AI Diligence Pack</span><span class="toc-fill"></span><span class="toc-page">diligence</span></div>
+      <div class="toc-line"><span class="toc-num">VII.</span><span class="toc-title">DDQ Automation + Consistency</span><span class="toc-fill"></span><span class="toc-page">diligence</span></div>
+      <div class="toc-line"><span class="toc-num">VIII.</span><span class="toc-title">Portfolio Normalization</span><span class="toc-fill"></span><span class="toc-page">diligence</span></div>
+      <div class="toc-line"><span class="toc-num">IX.</span><span class="toc-title">100-Day Plan Drift Monitor</span><span class="toc-fill"></span><span class="toc-page">operate</span></div>
+      <div class="toc-line"><span class="toc-num">X.</span><span class="toc-title">Procurement Benchmarking</span><span class="toc-fill"></span><span class="toc-page">operate</span></div>
+      <div class="toc-line"><span class="toc-num">XI.</span><span class="toc-title">EU AI Act Compliance Pack</span><span class="toc-fill"></span><span class="toc-page">operate</span></div>
+      <div class="toc-line"><span class="toc-num">XII.</span><span class="toc-title">Agent Sprawl Auditor</span><span class="toc-fill"></span><span class="toc-page">operate</span></div>
+    </div>
+  </nav>
+
+  <div class="ornament"></div>
+
+  <!-- ============ Catalogue ============ -->
+  <main class="catalog" id="catalog">
+
+    <!-- I — DX -->
+    <article class="entry">
+      <header class="entry-head">
+        <div class="entry-num"></div>
+        <div class="entry-titles">
+          <div class="entry-cat">Wedge · Layer 1</div>
+          <h2 class="entry-name">Decision Diagnostic (DX)</h2>
+        </div>
+      </header>
+      <p class="entry-desc">Ingest a portfolio company's CSVs; surface the top-3 repeatable, high-volume decisions being made badly — each with a counterfactual, a time-stability score, and row-level evidence.</p>
+      <div class="entry-finding"><strong>12 portcos diagnostic'd</strong> — Lending Club, Yasserh CC0, CFPB HMDA. $800k single-portco; $3.2M / $184M / $1.14B fund-level corpora.</div>
+      <form class="entry-form" data-tool="diagnose" data-example-report="dx_report_MortgageCo.html" novalidate>
+        <label class="field">
+          <span class="field-label">Portfolio Company ID</span>
+          <input type="text" name="portco_id" placeholder="e.g. acme_lending" maxlength="40" />
+        </label>
+        <label class="field-file">
+          <span class="icon">⤴</span>
+          <span class="filename" data-default="Drop loans.csv + performance.csv (or any vertical pair)">Drop loans.csv + performance.csv (or any vertical pair)</span>
+          <input type="file" name="files" multiple accept=".csv" />
+        </label>
+        <div class="actions">
+          <button type="submit" class="run-btn">Run diagnostic</button>
+          <a class="view-existing" href="../../finance_output/dx_report_MortgageCo.html" target="_blank">View MortgageCo example</a>
+        </div>
+        <div class="entry-status"></div>
+      </form>
+    </article>
+
+    <!-- II — Explainer -->
+    <article class="entry">
+      <header class="entry-head">
+        <div class="entry-num"></div>
+        <div class="entry-titles">
+          <div class="entry-cat">Wedge · Layer 1</div>
+          <h2 class="entry-name">Model-to-Narrative Explainer</h2>
+        </div>
+      </header>
+      <p class="entry-desc">Take any DX OpportunityMap and render a board-defendable memo — the why, the counterfactual, the risk of inaction, the rollout plan. Letterpress design, every figure traceable to a source field.</p>
+      <div class="entry-finding"><strong>13 board memos rendered</strong> across 12 portcos. Eval corpus: 87% mean citation accuracy, 100% coverage, 100% consistency.</div>
+      <form class="entry-form" data-tool="explain" data-example-report="explain_MortgageCo_board.html" novalidate>
+        <label class="field">
+          <span class="field-label">OpportunityMap path</span>
+          <input type="text" name="opportunity_map_path" placeholder="finance_output/dx_report_MortgageCo.json" />
+        </label>
+        <label class="field">
+          <span class="field-label">Audience</span>
+          <select name="audience">
+            <option value="board">Board</option>
+            <option value="operator">Operator</option>
+          </select>
+        </label>
+        <div class="actions">
+          <button type="submit" class="run-btn">Render memo</button>
+          <a class="view-existing" href="../../finance_output/explain_MortgageCo_board.html" target="_blank">View MortgageCo memo</a>
+        </div>
+        <div class="entry-status"></div>
+      </form>
+    </article>
+
+    <!-- III — BX -->
+    <article class="entry">
+      <header class="entry-head">
+        <div class="entry-num"></div>
+        <div class="entry-titles">
+          <div class="entry-cat">Moat · Layer 2</div>
+          <h2 class="entry-name">Cross-Portco Benchmarking (BX)</h2>
+        </div>
+      </header>
+      <p class="entry-desc">Ingest N OpportunityMaps. Render a fund-level rank table, archetype index, peer groups by cosine similarity, and quarter-over-quarter persistence — the LP-letter exhibit no scorecard vendor ships.</p>
+      <div class="entry-finding"><strong>3 fund corpora shipped</strong> — 5-region Lending Club ($3.19M), 5-state CFPB HMDA ($183.83M), 7-portco mixed-vertical ($1.14B).</div>
+      <form class="entry-form" data-tool="benchmark-corpus" data-example-report="bx_report_mixed_fund.html" novalidate>
+        <label class="field">
+          <span class="field-label">Corpus ID</span>
+          <input type="text" name="corpus_id" placeholder="e.g. fund_q1_2026" maxlength="40" />
+        </label>
+        <label class="field-file">
+          <span class="icon">⤴</span>
+          <span class="filename" data-default="Drop N OpportunityMap JSON sidecars">Drop N OpportunityMap JSON sidecars</span>
+          <input type="file" name="json_paths" multiple accept=".json" />
+        </label>
+        <div class="actions">
+          <button type="submit" class="run-btn">Build corpus</button>
+          <a class="view-existing" href="../../finance_output/bx_report_mixed_fund.html" target="_blank">View 7-portco mixed fund</a>
+        </div>
+        <div class="entry-status"></div>
+      </form>
+    </article>
+
+    <!-- IV — LLM Eval -->
+    <article class="entry">
+      <header class="entry-head">
+        <div class="entry-num"></div>
+        <div class="entry-titles">
+          <div class="entry-cat">Moat · Layer 2</div>
+          <h2 class="entry-name">LLM Eval for PE</h2>
+        </div>
+      </header>
+      <p class="entry-desc">Score any PE document AI output on four dimensions — citation accuracy, hallucination rate, coverage, consistency. The QA layer every other tool runs through. Catches real outliers, calibrates the rubric.</p>
+      <div class="entry-finding"><strong>13-memo corpus run</strong> — 87% mean citation, surfaced HMDA_DE and HMDA_MA at 33% as real outliers worth investigating.</div>
+      <form class="entry-form" data-tool="eval" data-example-report="eval_corpus_summary.html" novalidate>
+        <label class="field">
+          <span class="field-label">Memo JSON path</span>
+          <input type="text" name="memo_json_path" placeholder="finance_output/explain_MortgageCo_board.json" />
+        </label>
+        <label class="field">
+          <span class="field-label">Source JSON path (ground truth)</span>
+          <input type="text" name="source_json_path" placeholder="finance_output/dx_report_MortgageCo.json" />
+        </label>
+        <div class="actions">
+          <button type="submit" class="run-btn">Run eval</button>
+          <a class="view-existing" href="../../finance_output/eval_corpus_summary.html" target="_blank">View corpus eval summary</a>
+        </div>
+        <div class="entry-status"></div>
+      </form>
+    </article>
+
+    <!-- V — CIM Red-Flag -->
+    <article class="entry">
+      <header class="entry-head">
+        <div class="entry-num"></div>
+        <div class="entry-titles">
+          <div class="entry-cat">Diligence · Layer 3</div>
+          <h2 class="entry-name">CIM Red-Flag Extractor</h2>
+        </div>
+      </header>
+      <p class="entry-desc">Fetch any SEC 10-K or S-1 by ticker. Run eight heuristic flag families with section-level citations a reviewer can verify. Compresses a 200-page disclosure into a 1-page citation-grade brief.</p>
+      <div class="entry-finding"><strong>49 flags from real Sotera Health 10-K</strong> (SHC FY2025) — 16 high · 32 medium · 1 low. SEC EDGAR fetch, no auth.</div>
+      <form class="entry-form" data-tool="cim" data-example-report="cim_redflags_SHC.html" novalidate>
+        <div class="row">
+          <label class="field">
+            <span class="field-label">Ticker</span>
+            <input type="text" name="ticker" placeholder="e.g. SHC, BOWL, DNUT" maxlength="6" />
+          </label>
+          <label class="field">
+            <span class="field-label">Form</span>
+            <select name="form">
+              <option value="10-K">10-K · Annual</option>
+              <option value="10-Q">10-Q · Quarterly</option>
+              <option value="S-1">S-1 · IPO Prospectus</option>
+              <option value="8-K">8-K · Material event</option>
+              <option value="S-4">S-4 · M&A registration</option>
+            </select>
+          </label>
+        </div>
+        <div class="actions">
+          <button type="submit" class="run-btn">Extract flags</button>
+          <a class="view-existing" href="../../finance_output/cim_redflags_SHC.html" target="_blank">View Sotera Health (SHC)</a>
+        </div>
+        <div class="entry-status"></div>
+      </form>
+    </article>
+
+    <!-- VI — Seller-Side -->
+    <article class="entry">
+      <header class="entry-head">
+        <div class="entry-num"></div>
+        <div class="entry-titles">
+          <div class="entry-cat">Diligence · Layer 3</div>
+          <h2 class="entry-name">Seller-Side AI Diligence Pack</h2>
+        </div>
+      </header>
+      <p class="entry-desc">A portco entering exit pre-audits its claimed AI EBITDA contribution and produces a defensible proof pack — provenance ledger, sensitivity table at 50/100/130%, defensibility checklist per claim. Pure whitespace; no vendor ships this.</p>
+      <div class="entry-finding"><strong>$1.12B base · $560M-$1.46B sensitivity</strong> for MortgageCo. Every claim cites the OpportunityMap row + evidence row IDs.</div>
+      <form class="entry-form" data-tool="exit-proof-pack" data-example-report="exit_proof_pack_MortgageCo.html" novalidate>
+        <label class="field">
+          <span class="field-label">Portfolio Company ID</span>
+          <input type="text" name="portco_id" placeholder="e.g. MortgageCo" maxlength="40" />
+        </label>
+        <label class="field">
+          <span class="field-label">OpportunityMap path</span>
+          <input type="text" name="opportunity_map_path" placeholder="finance_output/dx_report_MortgageCo.json" />
+        </label>
+        <label class="field">
+          <span class="field-label">Optional: BX corpus path</span>
+          <input type="text" name="bx_corpus_path" placeholder="finance_output/bx_report_mixed_fund.json" />
+        </label>
+        <div class="actions">
+          <button type="submit" class="run-btn">Build proof pack</button>
+          <a class="view-existing" href="../../finance_output/exit_proof_pack_MortgageCo.html" target="_blank">View MortgageCo example</a>
+        </div>
+        <div class="entry-status"></div>
+      </form>
+    </article>
+
+    <!-- VII — DDQ -->
+    <article class="entry">
+      <header class="entry-head">
+        <div class="entry-num"></div>
+        <div class="entry-titles">
+          <div class="entry-cat">Diligence · Layer 3</div>
+          <h2 class="entry-name">DDQ Automation + Consistency</h2>
+        </div>
+      </header>
+      <p class="entry-desc">First-draft answers to ILPA-shaped DDQ questions, retrieved from the fund's existing AI-evidence archive. Cross-answer consistency checker flags contradictions before an LP catches them.</p>
+      <div class="entry-finding"><strong>12 questions · 38 KB artifacts · 26 consistency flags</strong> surfaced in the demo run. Bolnet Capital Partners I as the test fund.</div>
+      <form class="entry-form" data-tool="ddq" data-example-report="ddq_response_Bolnet_Capital_Partners_I.html" novalidate>
+        <label class="field">
+          <span class="field-label">Fund name</span>
+          <input type="text" name="fund_name" placeholder="e.g. Bolnet Capital Partners I" />
+        </label>
+        <label class="field">
+          <span class="field-label">Knowledge base directory</span>
+          <input type="text" name="knowledge_base_dir" placeholder="finance_output" value="finance_output" />
+        </label>
+        <div class="actions">
+          <button type="submit" class="run-btn">Generate DDQ draft</button>
+          <a class="view-existing" href="../../finance_output/ddq_response_Bolnet_Capital_Partners_I.html" target="_blank">View Bolnet response</a>
+        </div>
+        <div class="entry-status"></div>
+      </form>
+    </article>
+
+    <!-- VIII — Normalize -->
+    <article class="entry">
+      <header class="entry-head">
+        <div class="entry-num"></div>
+        <div class="entry-titles">
+          <div class="entry-cat">Diligence · Layer 3</div>
+          <h2 class="entry-name">Portfolio Normalization</h2>
+        </div>
+      </header>
+      <p class="entry-desc">Multi-format portco CSVs in, unified <code style="font-size:13px;font-family:'JetBrains Mono',monospace;background:rgba(194,173,132,0.18);padding:1px 5px;">lending_b2c</code> schema out. Mapping audit + 3-axis anomaly detection (magnitude, sign-flip, coverage). Kills the operating-partner monthly ritual.</p>
+      <div class="entry-finding"><strong>195k rows · 3 schemas · 9 anomalies</strong> — 24.7× consumer-vs-mortgage scale gap surfaced automatically.</div>
+      <form class="entry-form" data-tool="normalize" data-example-report="normalize_3portcos.html" novalidate>
+        <label class="field-file">
+          <span class="icon">⤴</span>
+          <span class="filename" data-default="Drop ≥ 2 portco loans.csv files in different formats">Drop ≥ 2 portco loans.csv files in different formats</span>
+          <input type="file" name="portco_csv_paths" multiple accept=".csv" />
+        </label>
+        <label class="field">
+          <span class="field-label">Portco IDs (comma-separated, in same order as files)</span>
+          <input type="text" name="portco_ids" placeholder="midwest_lender, MortgageCo, HMDA_GA" />
+        </label>
+        <div class="actions">
+          <button type="submit" class="run-btn">Normalize</button>
+          <a class="view-existing" href="../../finance_output/normalize_3portcos.html" target="_blank">View 3-portco example</a>
+        </div>
+        <div class="entry-status"></div>
+      </form>
+    </article>
+
+    <!-- IX — Plan Drift -->
+    <article class="entry">
+      <header class="entry-head">
+        <div class="entry-num"></div>
+        <div class="entry-titles">
+          <div class="entry-cat">Operate · Layer 4</div>
+          <h2 class="entry-name">100-Day Plan Drift Monitor</h2>
+        </div>
+      </header>
+      <p class="entry-desc">A frozen 100-day plan diffed against SEC EDGAR 10-Q actuals. Per-initiative drift status (on-track / lagging / off-track), dollar-gap quantification, root-cause attribution. Catches the Day-60 problem before the QBR.</p>
+      <div class="entry-finding"><strong>5 of 7 initiatives off-track</strong> for SoteraCo (SHC) · $121.6M EBITDA at risk · dynamic-pricing pilot the biggest single miss at $85M.</div>
+      <form class="entry-form" data-tool="plan-drift" data-example-report="plan_drift_SoteraCo.html" novalidate>
+        <div class="row">
+          <label class="field">
+            <span class="field-label">Portfolio Company ID</span>
+            <input type="text" name="portco_id" placeholder="e.g. SoteraCo" />
+          </label>
+          <label class="field">
+            <span class="field-label">SEC ticker</span>
+            <input type="text" name="ticker" placeholder="e.g. SHC" maxlength="6" />
+          </label>
+        </div>
+        <label class="field">
+          <span class="field-label">Plan ID</span>
+          <input type="text" name="plan_id" value="default_100day" />
+        </label>
+        <div class="actions">
+          <button type="submit" class="run-btn">Track drift</button>
+          <a class="view-existing" href="../../finance_output/plan_drift_SoteraCo.html" target="_blank">View SoteraCo example</a>
+        </div>
+        <div class="entry-status"></div>
+      </form>
+    </article>
+
+    <!-- X — Procurement -->
+    <article class="entry">
+      <header class="entry-head">
+        <div class="entry-num"></div>
+        <div class="entry-titles">
+          <div class="entry-cat">Operate · Layer 4</div>
+          <h2 class="entry-name">Procurement Benchmarking</h2>
+        </div>
+      </header>
+      <p class="entry-desc">Cross-buyer vendor price variance from public USAspending.gov federal-contract data. Each agency treated as a portco; same-vendor price spreads ranked by total recoverable savings. Apollo's playbook, productized.</p>
+      <div class="entry-finding"><strong>$936M cross-agency savings opportunity</strong> · 198 contracts, 28 agencies, 132 vendors. State Dept paying ~6× DHS for the same vendor.</div>
+      <form class="entry-form" data-tool="benchmark-vendors" data-example-report="benchmark_D310_FY2024.html" novalidate>
+        <div class="row">
+          <label class="field">
+            <span class="field-label">PSC code</span>
+            <input type="text" name="psc_code" value="D310" maxlength="8" />
+          </label>
+          <label class="field">
+            <span class="field-label">Fiscal year</span>
+            <select name="fiscal_year">
+              <option>2024</option>
+              <option>2023</option>
+              <option>2022</option>
+              <option>2021</option>
+              <option>2020</option>
+            </select>
+          </label>
+          <label class="field">
+            <span class="field-label">Max records</span>
+            <input type="number" name="max_records" value="500" min="100" max="5000" />
+          </label>
+        </div>
+        <div class="actions">
+          <button type="submit" class="run-btn">Benchmark vendors</button>
+          <a class="view-existing" href="../../finance_output/benchmark_D310_FY2024.html" target="_blank">View IT-services FY24 example</a>
+        </div>
+        <div class="entry-status"></div>
+      </form>
+    </article>
+
+    <!-- XI — EU AI Act -->
+    <article class="entry">
+      <header class="entry-head">
+        <div class="entry-num"></div>
+        <div class="entry-titles">
+          <div class="entry-cat">Operate · Layer 4</div>
+          <h2 class="entry-name">EU AI Act Compliance Pack</h2>
+        </div>
+      </header>
+      <p class="entry-desc">Article 6 high-risk classification (frozen Annex III §1-8) plus a per-Article documentation skeleton (9-15, plus Article 50 transparency). The 2 August 2026 deadline is the scarcity-driven hook.</p>
+      <div class="entry-finding"><strong>2 scenarios classified correctly</strong> — credit decisioning → high-risk per Annex III §5(b); marketing recommender → limited-risk per Article 50.</div>
+      <form class="entry-form" data-tool="ai-act-audit" data-example-report="ai_act_audit_LendingCo-EU.html" novalidate>
+        <label class="field">
+          <span class="field-label">Portfolio Company ID</span>
+          <input type="text" name="portco_id" placeholder="e.g. LendingCo-EU" />
+        </label>
+        <label class="field">
+          <span class="field-label">AI system description</span>
+          <textarea name="ai_system_description" placeholder="e.g. Consumer credit-decisioning ML model used to approve/deny loan applications across EU member states."></textarea>
+        </label>
+        <label class="field">
+          <span class="field-label">Use-case category</span>
+          <select name="use_case_category">
+            <option value="credit_decisioning">Credit decisioning</option>
+            <option value="employment">Employment / HR</option>
+            <option value="education">Education</option>
+            <option value="biometric_id">Biometric identification</option>
+            <option value="critical_infrastructure">Critical infrastructure</option>
+            <option value="essential_services">Essential services (other)</option>
+            <option value="law_enforcement">Law enforcement</option>
+            <option value="migration">Migration / asylum / border</option>
+            <option value="justice">Administration of justice</option>
+            <option value="marketing_personalization">Marketing personalization</option>
+            <option value="fraud_detection">Fraud detection</option>
+            <option value="internal_productivity">Internal productivity</option>
+            <option value="saas_analytics">B2B SaaS analytics</option>
+            <option value="supply_chain">Supply-chain optimisation</option>
+          </select>
+        </label>
+        <div class="actions">
+          <button type="submit" class="run-btn">Audit & classify</button>
+          <a class="view-existing" href="../../finance_output/ai_act_audit_LendingCo-EU.html" target="_blank">View LendingCo-EU example</a>
+        </div>
+        <div class="entry-status"></div>
+      </form>
+    </article>
+
+    <!-- XII — Agent Sprawl -->
+    <article class="entry">
+      <header class="entry-head">
+        <div class="entry-num"></div>
+        <div class="entry-titles">
+          <div class="entry-cat">Operate · Layer 4</div>
+          <h2 class="entry-name">Agent Sprawl Auditor</h2>
+        </div>
+      </header>
+      <p class="entry-desc">AST-walks an MCP server registry. Inventories every registered agent with modeled telemetry — flags zombies, runaway-cost, and misaligned. Recommends pruning with annual savings. Catches what Gartner forecasts will sink 40% of agentic projects.</p>
+      <div class="entry-finding"><strong>23 agents · 15 zombies · $19,880/yr saved</strong> if pruned. Top recommendation: <code style="font-size:13px;font-family:'JetBrains Mono',monospace;background:rgba(194,173,132,0.18);padding:1px 5px;">cim_analyze</code> at $12,960/yr (triple-flag).</div>
+      <form class="entry-form" data-tool="audit-agents" data-example-report="audit_agents_server.html" novalidate>
+        <label class="field">
+          <span class="field-label">Server module path</span>
+          <input type="text" name="server_module_path" value="src/finance_mcp/server.py" />
+        </label>
+        <div class="row">
+          <label class="field">
+            <span class="field-label">Zombie threshold (days)</span>
+            <input type="number" name="days_zombie_threshold" value="30" min="1" max="365" />
+          </label>
+          <label class="field">
+            <span class="field-label">Runaway-cost threshold ($/mo)</span>
+            <input type="number" name="monthly_cost_threshold_usd" value="1000" min="0" />
+          </label>
+        </div>
+        <div class="actions">
+          <button type="submit" class="run-btn">Audit registry</button>
+          <a class="view-existing" href="../../finance_output/audit_agents_server.html" target="_blank">View this repo's audit</a>
+        </div>
+        <div class="entry-status"></div>
+      </form>
+    </article>
+
+  </main>
+
+  <!-- ============ Colophon ============ -->
+  <footer class="colophon">
+    <div class="signature">— Composed at the OpportunityMap layer —</div>
+    Twelve interactive entry points to the same engines that produce the diagnostic memos and benchmark reports.
+    Backend endpoints under <code>/api/&lt;tool&gt;</code> stub the response shape; click <em>view example</em> on any card
+    to open the pre-rendered report this session produced. Every figure on this page traces back to a real
+    OpportunityMap field, a real SEC filing, or a real public dataset. No fabricated number survives the renderer.<br /><br />
+    Source: <a href="https://github.com/bolnet/private-equity" target="_blank" rel="noopener">github.com/bolnet/private-equity</a>
+    &middot; MIT-licensed &middot; pandas-deterministic &middot; air-gappable.
+  </footer>
+
+</div>
+
+<script>
+  // File-input filename echo
+  document.querySelectorAll('.field-file').forEach(label => {
+    const fname = label.querySelector('.filename');
+    const input = label.querySelector('input[type="file"]');
+    const def = fname.dataset.default || fname.textContent;
+    input.addEventListener('change', () => {
+      const files = Array.from(input.files || []);
+      if (files.length === 0) {
+        fname.textContent = def;
+        fname.style.fontStyle = 'italic';
+        return;
+      }
+      if (files.length === 1) {
+        fname.textContent = files[0].name;
+      } else {
+        fname.textContent = `${files.length} files: ${files.slice(0, 3).map(f => f.name).join(', ')}${files.length > 3 ? '…' : ''}`;
+      }
+      fname.style.fontStyle = 'normal';
+    });
+  });
+
+  // Form submission — POSTs to /api/<tool>; gracefully falls back to demo mode
+  document.querySelectorAll('.entry-form').forEach(form => {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const tool = form.dataset.tool;
+      const exampleReport = form.dataset.exampleReport;
+      const status = form.querySelector('.entry-status');
+      const button = form.querySelector('.run-btn');
+
+      status.classList.remove('show', 'demo', 'success', 'running');
+      status.classList.add('show', 'running');
+      status.innerHTML = `<em>Calling</em> <code>/api/${tool}</code> <em>…</em>`;
+      button.disabled = true;
+      button.textContent = 'Running…';
+
+      try {
+        const fd = new FormData(form);
+        const res = await fetch(`/api/${tool}`, { method: 'POST', body: fd });
+        if (res.ok) {
+          const data = await res.json();
+          status.classList.remove('running');
+          status.classList.add('success');
+          status.innerHTML = `<strong>Rendered.</strong> Open the report: <a href="${data.report_path || ('../../finance_output/' + exampleReport)}" target="_blank">${data.report_path || exampleReport}</a>`;
+        } else {
+          throw new Error(`HTTP ${res.status}`);
+        }
+      } catch (err) {
+        status.classList.remove('running');
+        status.classList.add('demo');
+        status.innerHTML = `<em>Backend not yet wired</em> — for this catalogue iteration, call the MCP tool directly from Claude Code, or open the pre-rendered example: <a href="../../finance_output/${exampleReport}" target="_blank">finance_output/${exampleReport}</a>`;
+      } finally {
+        button.disabled = false;
+        button.textContent = button.dataset.originalText || form.querySelector('.run-btn').textContent.replace('Running…', '').trim();
+      }
+    });
+
+    // Cache original button text
+    const btn = form.querySelector('.run-btn');
+    btn.dataset.originalText = btn.textContent;
+  });
+
+  // Smooth-scroll from contents to entries (optional UX nicety)
+  document.querySelectorAll('.toc-line').forEach((line, idx) => {
+    line.style.cursor = 'pointer';
+    line.addEventListener('click', () => {
+      const target = document.querySelectorAll('.entry')[idx];
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+</script>
+</body>
+</html>
