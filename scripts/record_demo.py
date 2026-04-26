@@ -197,6 +197,101 @@ class BXProfile:
 
 
 BX_PROFILES: dict[str, BXProfile] = {
+    "bx-procurement": BXProfile(
+        name="bx-procurement",
+        report_path=REPO / "finance_output" / "benchmark_D310_FY2024.html",
+        regen_hint="python -c 'from finance_mcp.procurement import benchmark_vendors; benchmark_vendors(psc_code=\"D310\", fiscal_year=2024, max_records=500)'",
+        intro_kicker="PROCUREMENT × CROSS-PORTCO",
+        intro_text="Apollo's playbook, productized for the rest of mid-market PE.",
+        intro_hint=(
+            "198 real federal contracts · 28 agencies · 132 vendors · "
+            "all USAspending.gov public data, no auth."
+        ),
+        archetype_text=(
+            "$936M of cross-agency savings opportunity surfaced — "
+            "the same vendor priced 6× higher at one buyer than another."
+        ),
+        archetype_hint=(
+            "Each row is a real federal agency (treated as a portco) and "
+            "the dollar gap to its best-priced peer."
+        ),
+        rank_text=(
+            "Top buyers ranked by recoverable spend if matched to their "
+            "best-priced peer agency for the same vendor + service code."
+        ),
+        rank_hint=(
+            "State Dept · GSA · Commerce — the names a partner recognises, "
+            "the dollar spreads a procurement team can act on."
+        ),
+        top_portco_text=(
+            "Department of State leads — $526.6M recoverable if it matched "
+            "DHS's pricing on the same vendor."
+        ),
+        top_portco_hint=(
+            "Two awards · $624.8M cohort spend · ~6.4× price spread vs. peer."
+        ),
+        peer_text=(
+            "Vendor-level spread shows which suppliers price-discriminate "
+            "across buyers — those are the contracts to renegotiate."
+        ),
+        peer_hint=(
+            "Same vendor at two agencies, two prices · the data the "
+            "procurement team needs is finally on one page."
+        ),
+        outro_text=(
+            "Open source · MIT · pure stdlib + pandas. Same engine works "
+            "on any portco's contract data."
+        ),
+        outro_hint="github.com/bolnet/private-equity",
+    ),
+    "bx-plan-drift": BXProfile(
+        name="bx-plan-drift",
+        report_path=REPO / "finance_output" / "plan_drift_SoteraCo.html",
+        regen_hint="python -c 'from finance_mcp.plan_drift import track_plan_drift; track_plan_drift(portco_id=\"SoteraCo\", ticker=\"SHC\")'",
+        intro_kicker="100-DAY PLAN × DRIFT MONITOR",
+        intro_text="The Day-60 problem caught before it becomes a QBR surprise.",
+        intro_hint=(
+            "7 frozen initiatives · diffed against real Sotera Health (SHC) "
+            "10-Q actuals via SEC EDGAR."
+        ),
+        archetype_text=(
+            "Five of seven initiatives off-track. $121.6M of EBITDA at "
+            "risk against the original plan."
+        ),
+        archetype_hint=(
+            "Each initiative carries a KPI · target · due-day · plan vs. "
+            "actual · dollar gap · status."
+        ),
+        rank_text=(
+            "Initiatives ranked by recoverable dollar gap. Top miss is "
+            "$85M on the dynamic-pricing pilot."
+        ),
+        rank_hint=(
+            "The bigger the gap, the higher up the partner's intervention "
+            "list it goes — automatic."
+        ),
+        top_portco_text=(
+            "The dynamic-pricing pilot was supposed to land in 50 priority "
+            "centers. The 10-Q says it didn't."
+        ),
+        top_portco_hint=(
+            "Direction-aware gap math — positive=ahead, negative=behind, "
+            "regardless of whether KPI is higher- or lower-better."
+        ),
+        peer_text=(
+            "Operator memo at the bottom of the report — the why, the "
+            "evidence, the recommended next 30 days."
+        ),
+        peer_hint=(
+            "Same prose contract as the explainer. Defensible in a "
+            "Wednesday-morning board call."
+        ),
+        outro_text=(
+            "Reuses the SEC EDGAR fetcher. Real public actuals. "
+            "Reproducible from a clean clone."
+        ),
+        outro_hint="github.com/bolnet/private-equity",
+    ),
     "bx-hmda-states": BXProfile(
         name="bx-hmda-states",
         report_path=REPO / "finance_output" / "bx_report_hmda_states.html",

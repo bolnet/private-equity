@@ -41,12 +41,14 @@ flavours:
 | `yasserh`  | Yasserh US mortgage default, 2019 (148k → 30k)  | Kaggle                | none*    |
 | `hmda`     | CFPB HMDA Washington DC, 2023 (11.6k)           | ffiec.cfpb.gov        | none     |
 
-### BX profiles — navigation-only walkthroughs of rendered fund reports (no server)
+### BX profiles — navigation-only walkthroughs of rendered HTML reports (no server)
 
-| Profile           | Corpus                                                    | Portcos | Fund $       |
-|-------------------|-----------------------------------------------------------|--------:|--------------|
-| `bx-hmda-states`  | 5-state CFPB HMDA mortgage origination (DC·DE·MA·AZ·GA)   | 5       | $184M        |
-| `bx-mixed-fund`   | 7-portco mixed-vertical (LC regional + Yasserh + HMDA DC) | 7       | $1.14B       |
+| Profile           | Report                                                                       | Real source                        | Headline             |
+|-------------------|------------------------------------------------------------------------------|------------------------------------|----------------------|
+| `bx-hmda-states`  | 5-state CFPB HMDA mortgage origination (DC·DE·MA·AZ·GA)                      | ffiec.cfpb.gov                     | $184M fund-wide      |
+| `bx-mixed-fund`   | 7-portco mixed-vertical (LC regional + Yasserh + HMDA DC)                    | HuggingFace + Kaggle + CFPB        | $1.14B fund-wide     |
+| `bx-procurement`  | Federal-contract cross-agency benchmark (PSC D310, FY2024)                   | USAspending.gov                    | $936M savings        |
+| `bx-plan-drift`   | 100-day plan vs SEC EDGAR 10-Q actuals (Sotera Health)                       | data.sec.gov                       | $121.6M plan gap     |
 
 \* Kaggle CLI works without an API key for many CC0 public datasets.
 
