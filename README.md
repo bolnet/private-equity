@@ -1,5 +1,9 @@
 # Private Equity × AI
 
+> ### → [**Open the live site: bolnet.github.io/private-equity**](https://bolnet.github.io/private-equity/) — twelve tools, eleven explainer videos, real public data
+>
+> Built and maintained by **[Surendra Singh](https://www.linkedin.com/in/surendrasingh/)** · Private Equity × AI subject-matter expert · available for operating-partner, advisor, and 90-day engagement work at PE firms.
+
 > **A working toolkit for private-equity firms who want to turn AI from deck-slide into measurable portfolio value.**
 
 Most "AI for PE" today is slides, vendor demos, and a 100-day plan template no one operationalizes. This is a shipped, runnable system that diagnoses where decisions are losing money inside a portco, benchmarks every portco against the rest of the fund, and feeds it back to the deal team and LPs in artifacts a partner can actually send.
