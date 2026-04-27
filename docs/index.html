@@ -43,7 +43,7 @@
       radial-gradient(ellipse 600px 450px at 90% 40%, rgba(107,20,20,.025), transparent 60%),
       radial-gradient(ellipse 500px 500px at 5% 80%, rgba(138,111,26,.04), transparent 60%),
       var(--paper);
-    padding: 0 0 80px;
+    padding: 0;
     min-height: 100vh;
     position: relative;
   }
@@ -115,45 +115,46 @@
   /* ============ Masthead ============ */
   .masthead {
     text-align: center;
-    padding: 88px 32px 56px;
+    padding: 56px 32px 36px;
     border-bottom: 3px double var(--rule);
     position: relative;
   }
   .masthead .imprint-line {
     font-family: 'Cormorant Garamond', serif;
     font-style: italic; font-weight: 400;
-    font-size: 14px; color: var(--accent);
+    font-size: 13px; color: var(--accent);
     letter-spacing: 0.32em; text-transform: uppercase;
-    margin-bottom: 18px;
+    margin-bottom: 14px;
   }
   .masthead .imprint-line::before { content: '✦  '; color: var(--rule); letter-spacing: normal; }
   .masthead .imprint-line::after  { content: '  ✦'; color: var(--rule); letter-spacing: normal; }
   .masthead h1 {
     font-family: 'Cormorant Garamond', serif;
     font-weight: 500;
-    font-size: clamp(48px, 7.6vw, 96px);
-    line-height: 1.02;
+    font-size: clamp(42px, 6vw, 76px);
+    line-height: 1.04;
     letter-spacing: -0.012em;
     color: var(--ink);
-    margin: 0 auto 20px;
-    max-width: 14ch;
+    margin: 0 auto 16px;
+    max-width: 22ch;
   }
   .masthead h1 em { font-style: italic; color: var(--accent); font-weight: 500; }
   .masthead .subtitle {
     font-family: 'EB Garamond', serif; font-style: italic;
-    font-size: clamp(18px, 2vw, 22px);
+    font-size: clamp(17px, 1.6vw, 20px);
     color: var(--ink-dim);
-    max-width: 56ch; margin: 0 auto 28px;
+    max-width: 60ch; margin: 0 auto 22px;
     line-height: 1.5;
   }
   .masthead-meta {
-    display: inline-flex; align-items: baseline; gap: 28px;
-    padding: 14px 28px;
+    display: inline-flex; align-items: baseline; gap: 24px;
+    padding: 10px 24px;
     border-top: 1px solid var(--rule);
     border-bottom: 1px solid var(--rule);
     font-family: 'Cormorant Garamond', serif;
-    font-size: 14px; color: var(--ink-dim);
+    font-size: 13px; color: var(--ink-dim);
     font-variant: small-caps; letter-spacing: 0.16em;
+    flex-wrap: wrap; justify-content: center;
   }
   .masthead-meta strong { color: var(--ink); font-weight: 500; }
   .masthead-meta span em {
@@ -164,17 +165,17 @@
 
   .ornament-row {
     text-align: center;
-    margin: 44px 0;
+    margin: 28px 0;
     color: var(--rule);
     font-family: 'Cormorant Garamond', serif;
-    font-size: 22px; letter-spacing: 1.4em;
+    font-size: 18px; letter-spacing: 1.4em;
     padding-left: 1.4em;
   }
   .ornament-row::before { content: '✦  ✦  ✦'; }
 
   /* ============ Headline ticker ============ */
   .ticker {
-    margin: 32px auto 64px;
+    margin: 24px auto 36px;
     max-width: var(--max);
     display: grid;
     grid-template-columns: repeat(6, 1fr);
@@ -221,7 +222,7 @@
   .cta-row {
     display: flex; gap: 16px; flex-wrap: wrap;
     justify-content: center;
-    margin: 0 auto 72px;
+    margin: 0 auto 36px;
   }
   .btn {
     display: inline-flex; align-items: baseline; gap: 8px;
@@ -249,19 +250,19 @@
 
   /* ============ Section ============ */
   section.col {
-    padding: 80px 0;
+    padding: 56px 0;
     border-top: 1px solid var(--rule);
   }
   section.col:first-of-type { border-top: none; }
   section.col h2 {
     font-family: 'Cormorant Garamond', serif;
     font-weight: 500;
-    font-size: clamp(34px, 4.6vw, 56px);
+    font-size: clamp(30px, 3.8vw, 46px);
     line-height: 1.06;
     letter-spacing: -0.005em;
     color: var(--ink);
-    margin: 0 0 14px;
-    max-width: 22ch;
+    margin: 0 0 12px;
+    max-width: 26ch;
   }
   section.col h2 em { font-style: italic; color: var(--accent); }
   section.col .sect-eyebrow {
@@ -276,9 +277,9 @@
   section.col .sect-lede {
     font-family: 'EB Garamond', serif;
     font-style: italic;
-    font-size: 19px; line-height: 1.55;
+    font-size: 18px; line-height: 1.55;
     color: var(--ink-dim);
-    max-width: 64ch; margin-bottom: 40px;
+    max-width: 64ch; margin-bottom: 28px;
   }
   section.col .sect-lede strong { font-style: normal; color: var(--ink); font-weight: 600; }
 
@@ -319,12 +320,12 @@
   .catalogue {
     display: grid; gap: 0;
     border-top: 1px solid var(--rule);
-    margin-top: 24px;
+    margin-top: 16px;
   }
   .entry {
-    display: grid; grid-template-columns: 80px 1fr 320px;
-    gap: 36px;
-    padding: 36px 0;
+    display: grid; grid-template-columns: 60px 1fr 280px;
+    gap: 28px;
+    padding: 24px 0;
     border-bottom: 1px solid var(--rule-soft);
     position: relative;
   }
@@ -332,29 +333,29 @@
   .entry-num {
     font-family: 'Cormorant Garamond', serif;
     font-style: italic; font-weight: 500;
-    font-size: 28px; color: var(--accent);
-    line-height: 1; padding-top: 4px;
+    font-size: 26px; color: var(--accent);
+    line-height: 1; padding-top: 2px;
   }
-  .entry-titles { display: flex; flex-direction: column; gap: 8px; }
+  .entry-titles { display: flex; flex-direction: column; gap: 6px; }
   .entry-cat {
     font-variant: small-caps; letter-spacing: 0.16em;
     font-size: 11px; color: var(--ink-faint); font-weight: 500;
   }
   .entry-name {
     font-family: 'Cormorant Garamond', serif;
-    font-weight: 500; font-size: 30px; line-height: 1.1;
+    font-weight: 500; font-size: 24px; line-height: 1.15;
     color: var(--ink); letter-spacing: -0.005em;
-    margin: 2px 0 8px;
+    margin: 0 0 6px;
   }
   .entry-desc {
     font-family: 'EB Garamond', serif;
-    font-size: 16px; line-height: 1.55; color: var(--ink-mid);
+    font-size: 15px; line-height: 1.55; color: var(--ink-mid);
     max-width: 68ch;
   }
   .entry-finding {
     font-family: 'EB Garamond', serif; font-style: italic;
-    font-size: 14px; color: var(--ink-faint);
-    margin-top: 8px; padding-top: 10px;
+    font-size: 13px; color: var(--ink-faint);
+    margin-top: 6px; padding-top: 8px;
     border-top: 1px dotted var(--rule-soft);
     max-width: 68ch;
   }
@@ -362,26 +363,26 @@
     color: var(--accent); font-style: italic;
     font-weight: 500;
   }
-  .entry-meta { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; padding-top: 4px; }
+  .entry-meta { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; padding-top: 0; }
   .entry-audience {
     font-family: 'EB Garamond', serif; font-style: italic;
-    font-size: 13px; color: var(--ink-dim); line-height: 1.5;
+    font-size: 13px; color: var(--ink-dim); line-height: 1.45;
   }
   .entry-audience strong {
     color: var(--ink); font-style: normal;
     font-variant: small-caps; letter-spacing: 0.14em;
-    font-size: 11px; font-weight: 600; display: block;
-    margin-bottom: 4px;
+    font-size: 10px; font-weight: 600; display: block;
+    margin-bottom: 3px;
   }
-  .entry-actions { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+  .entry-actions { display: flex; flex-direction: column; gap: 6px; width: 100%; }
   .entry-action {
     display: inline-flex; align-items: baseline;
     justify-content: space-between;
-    padding: 8px 14px;
+    padding: 6px 12px;
     border: 1px solid var(--rule);
     background: var(--page);
     font-family: 'Cormorant Garamond', serif;
-    font-style: italic; font-weight: 500; font-size: 15px;
+    font-style: italic; font-weight: 500; font-size: 14px;
     color: var(--ink);
     text-decoration: none; border-bottom-color: var(--rule);
     transition: all .15s ease;
@@ -503,30 +504,32 @@
   /* ============ Principles strip ============ */
   .principles {
     display: grid; grid-template-columns: repeat(4, 1fr);
-    gap: 28px;
-    margin-top: 32px;
+    gap: 0;
+    margin-top: 16px;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
   }
   .principles .p {
-    padding: 24px 22px;
-    background: var(--page);
-    border: 1px solid var(--rule-soft);
-    border-top: 2px solid var(--accent);
+    padding: 22px 22px;
+    background: transparent;
+    border-right: 1px solid var(--rule-soft);
   }
+  .principles .p:last-child { border-right: none; }
   .principles .p .num {
     font-family: 'Cormorant Garamond', serif;
     font-style: italic; font-weight: 500;
-    font-size: 32px; color: var(--accent);
-    line-height: 1; margin-bottom: 12px;
+    font-size: 26px; color: var(--accent);
+    line-height: 1; margin-bottom: 8px;
   }
   .principles .p .name {
     font-family: 'Cormorant Garamond', serif;
-    font-weight: 500; font-size: 22px;
-    color: var(--ink); margin-bottom: 10px;
+    font-weight: 500; font-size: 19px;
+    color: var(--ink); margin-bottom: 8px;
     line-height: 1.2;
   }
   .principles .p .body {
     font-family: 'EB Garamond', serif;
-    font-size: 15px; line-height: 1.55;
+    font-size: 14px; line-height: 1.55;
     color: var(--ink-mid);
   }
   @media (max-width: 880px) {
@@ -535,8 +538,8 @@
 
   /* ============ CTA banner ============ */
   .cta-banner {
-    margin: 80px 0 32px;
-    padding: 48px 36px;
+    margin: 24px 0 24px;
+    padding: 36px 32px;
     background: var(--page);
     border: 1px solid var(--rule);
     border-top: 2px solid var(--accent);
@@ -545,30 +548,30 @@
   .cta-banner h2 {
     font-family: 'Cormorant Garamond', serif;
     font-weight: 500;
-    font-size: clamp(30px, 4vw, 44px);
-    color: var(--ink); margin: 0 auto 14px;
-    max-width: 24ch;
+    font-size: clamp(26px, 3.4vw, 38px);
+    color: var(--ink); margin: 0 auto 10px;
+    max-width: 36ch;
     line-height: 1.1;
   }
   .cta-banner h2 em { color: var(--accent); font-style: italic; }
   .cta-banner p {
     font-family: 'EB Garamond', serif; font-style: italic;
-    font-size: 18px; color: var(--ink-dim);
-    max-width: 60ch; margin: 0 auto 28px;
+    font-size: 17px; color: var(--ink-dim);
+    max-width: 60ch; margin: 0 auto 22px;
   }
 
   /* ============ Footer ============ */
   footer.colophon {
     border-top: 3px double var(--rule);
-    padding: 36px 32px 16px;
-    margin-top: 48px;
+    padding: 28px 32px 16px;
+    margin-top: 16px;
     text-align: center;
     font-family: 'EB Garamond', serif; font-style: italic;
     font-size: 14px; color: var(--ink-faint);
     line-height: 1.7;
   }
   footer.colophon .cred {
-    margin-bottom: 8px;
+    margin-bottom: 6px;
   }
   footer.colophon a {
     color: var(--ink-dim);
