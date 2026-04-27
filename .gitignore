@@ -81,3 +81,6 @@ demo/**/policies.csv
 demo/**/agents.csv
 demo/**/deals.csv
 demo/**/customers.csv
+docs/demos/
+.local/demo/output/*.mp4
+/tmp/pe-demo/

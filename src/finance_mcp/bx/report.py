@@ -32,91 +32,197 @@ from finance_mcp.output import ensure_output_dirs, SCRIPT_DIR
 
 _CSS = """
 :root {
-  --bg-primary:#0a0a0b; --bg-secondary:#111113; --bg-card:#16161a;
-  --bg-card-hover:#1c1c21; --border:#2a2a30; --border-subtle:#1e1e24;
-  --text-primary:#f0f0f2; --text-secondary:#94949e; --text-muted:#5c5c66;
-  --accent:#00d4aa; --red:#ff4d6a; --amber:#ffb347; --blue:#4d9cff;
+  --paper:#f4ecd5; --page:#fbf6e2; --page-dim:#f6efd7;
+  --ink:#1a140d; --ink-mid:#3a2e1d; --ink-dim:#5a4a35; --ink-faint:#8b765a;
+  --rule:#c2ad84; --rule-soft:#dfd2af; --rule-mute:#e8dfc0;
+  --accent:#6b1414; --accent-2:#93331f; --gold:#8a6f1a;
+  --good:#4d6b2c; --red:#8b2a2a; --amber:#b35a1f; --blue:#3d5a8a;
 }
 *{margin:0;padding:0;box-sizing:border-box}
+html{background:#ece4cb}
 body{
-  font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;
-  background:var(--bg-primary); color:var(--text-primary);
-  line-height:1.55; padding:48px 24px 96px;
-  -webkit-font-smoothing:antialiased;
+  font-family:'EB Garamond','Iowan Old Style',Georgia,serif;
+  background:
+    radial-gradient(ellipse 1100px 700px at 50% -100px, rgba(255,248,220,.55), transparent 70%),
+    radial-gradient(ellipse 600px 450px at 90% 40%, rgba(107,20,20,.025), transparent 60%),
+    radial-gradient(ellipse 500px 500px at 5% 80%, rgba(138,111,26,.04), transparent 60%),
+    var(--paper);
+  color:var(--ink);
+  font-size:17px; line-height:1.6;
+  font-feature-settings:"liga","dlig","onum","kern";
+  text-rendering:optimizeLegibility; -webkit-font-smoothing:antialiased;
+  padding:64px 24px 96px; min-height:100vh;
 }
-.wrap{max-width:1200px; margin:0 auto}
-.eyebrow{color:var(--accent); font-size:12px; font-weight:500;
-  letter-spacing:.12em; text-transform:uppercase; margin-bottom:12px}
-h1{font-size:34px; font-weight:500; letter-spacing:-.02em; line-height:1.2}
-h1 em{font-style:normal; color:var(--accent)}
-.sub{color:var(--text-secondary); margin-top:12px; font-size:16px}
-.meta{display:flex; flex-wrap:wrap; gap:24px; margin-top:24px;
-  padding:16px 20px; background:var(--bg-card);
-  border:1px solid var(--border-subtle); border-radius:12px}
-.meta-item{display:flex; flex-direction:column; gap:4px}
-.meta-label{font-size:11px; color:var(--text-muted);
-  letter-spacing:.08em; text-transform:uppercase}
-.meta-value{font-size:18px; font-weight:500}
+body::before{
+  content:''; position:fixed; inset:0;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.42  0 0 0 0 0.34  0 0 0 0 0.18  0 0 0 0.07 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  opacity:.42; mix-blend-mode:multiply;
+  pointer-events:none; z-index:0;
+}
+
+.wrap{
+  max-width:1200px; margin:0 auto;
+  position:relative; z-index:1;
+  background:var(--page);
+  padding:64px 64px 56px;
+  border:1px solid rgba(194,173,132,.45);
+  box-shadow:
+    0 1px 0 var(--rule-soft),
+    0 30px 60px -30px rgba(60,40,15,.18),
+    0 8px 18px -6px rgba(60,40,15,.08);
+}
+
+.eyebrow{
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic; font-weight:400;
+  font-size:13px; color:var(--accent);
+  letter-spacing:.28em; text-transform:uppercase; margin-bottom:16px;
+}
+.eyebrow::before{content:'— '; color:var(--rule); letter-spacing:normal}
+.eyebrow::after {content:' —'; color:var(--rule); letter-spacing:normal}
+h1{
+  font-family:'Cormorant Garamond',serif;
+  font-weight:500; font-size:46px; line-height:1.1;
+  letter-spacing:-.005em; color:var(--ink);
+}
+h1 em{font-style:italic; color:var(--accent); font-weight:500}
+.sub{
+  font-family:'EB Garamond',serif; font-style:italic;
+  color:var(--ink-dim); margin-top:14px; font-size:18px;
+  max-width:62ch;
+}
+.meta{
+  display:flex; flex-wrap:wrap; gap:0;
+  margin-top:32px;
+  border-top:1px solid var(--rule);
+  border-bottom:1px solid var(--rule);
+  padding:18px 0; background:transparent;
+}
+.meta-item{
+  flex:1 1 auto; min-width:140px;
+  padding:0 22px; display:flex; flex-direction:column; gap:6px;
+  border-right:1px solid var(--rule-soft);
+}
+.meta-item:last-child{border-right:none}
+.meta-label{
+  font-variant:small-caps; letter-spacing:.16em;
+  font-size:11px; color:var(--ink-faint); font-weight:500;
+}
+.meta-value{
+  font-family:'Cormorant Garamond',serif;
+  font-weight:500; font-size:22px; color:var(--ink);
+  font-feature-settings:"lnum","tnum"; line-height:1.1;
+}
 .meta-value.good{color:var(--accent)}
 
-.section{margin-top:44px}
-.section h2{font-size:22px; font-weight:500; margin-bottom:12px;
-  letter-spacing:-.01em}
-.section .sub-h{color:var(--text-muted); font-size:13px; margin-bottom:16px}
+.section{margin-top:56px}
+.section h2{
+  font-family:'Cormorant Garamond',serif;
+  font-size:30px; font-weight:500; margin-bottom:6px;
+  letter-spacing:-.005em; color:var(--ink);
+}
+.section .sub-h{
+  font-family:'EB Garamond',serif; font-style:italic;
+  color:var(--ink-dim); font-size:15px; margin-bottom:22px;
+  border-bottom:1px solid var(--rule); padding-bottom:14px;
+}
 
-/* Archetype index */
+/* Archetype index — letterpress bands */
 .arche-grid{display:grid; gap:10px}
-.arche-row{display:grid; grid-template-columns:140px 1fr 100px;
-  gap:16px; align-items:center; padding:12px 14px;
-  background:var(--bg-card); border:1px solid var(--border-subtle);
-  border-radius:10px}
-.arche-name{font-weight:500; font-size:14px;
-  color:var(--text-primary); text-transform:capitalize}
-.arche-range{position:relative; height:24px;
-  background:var(--border-subtle); border-radius:4px}
+.arche-row{
+  display:grid; grid-template-columns:160px 1fr 110px;
+  gap:18px; align-items:center; padding:14px 18px;
+  background:var(--page-dim);
+  border:1px solid var(--rule-soft);
+}
+.arche-name{
+  font-family:'Cormorant Garamond',serif;
+  font-weight:500; font-size:17px;
+  color:var(--ink); text-transform:capitalize;
+}
+.arche-range{
+  position:relative; height:26px;
+  background:var(--rule-mute);
+  border:1px solid var(--rule-soft);
+}
 .arche-range .band{position:absolute; top:0; height:100%;
-  background:var(--accent); opacity:.28; border-radius:4px}
-.arche-range .median{position:absolute; top:-3px; bottom:-3px;
+  background:var(--accent); opacity:.32}
+.arche-range .median{position:absolute; top:-4px; bottom:-4px;
   width:2px; background:var(--accent)}
-.arche-range .label{position:absolute; top:6px; right:10px;
-  font-size:11px; color:var(--text-muted)}
-.arche-total{font-variant-numeric:tabular-nums; font-size:14px;
-  font-weight:500; text-align:right}
+.arche-range .label{position:absolute; top:7px; right:10px;
+  font-size:11px; color:var(--ink-faint); font-style:italic}
+.arche-total{
+  font-family:'Cormorant Garamond',serif; font-style:italic;
+  font-feature-settings:"lnum","tnum"; font-size:18px;
+  font-weight:500; text-align:right; color:var(--ink);
+}
 
-/* Rank table */
-.rank-tbl{width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums}
-.rank-tbl th{text-align:left; font-weight:500; font-size:11px;
-  color:var(--text-muted); text-transform:uppercase;
-  letter-spacing:.08em; padding:10px 12px;
-  border-bottom:1px solid var(--border-subtle)}
-.rank-tbl td{padding:14px 12px; border-bottom:1px solid var(--border-subtle);
-  font-size:14px}
+/* Rank table — gazette ledger */
+.rank-tbl{
+  width:100%; border-collapse:collapse;
+  font-feature-settings:"lnum","tnum";
+}
+.rank-tbl th{
+  text-align:left; font-weight:500;
+  font-variant:small-caps; letter-spacing:.16em;
+  font-size:11px; color:var(--ink-faint);
+  padding:12px 14px;
+  border-bottom:1px solid var(--rule);
+}
+.rank-tbl td{
+  padding:16px 14px; border-bottom:1px solid var(--rule-soft);
+  font-size:15px; color:var(--ink);
+}
 .rank-tbl tr:last-child td{border-bottom:none}
-.rank-tbl tr:hover td{background:var(--bg-card-hover)}
-.rank-cell{color:var(--accent); font-weight:500}
-.pct-cell{color:var(--text-secondary); font-size:13px}
+.rank-tbl tr:hover td{background:var(--page-dim)}
+.rank-cell{
+  color:var(--accent); font-weight:500;
+  font-family:'Cormorant Garamond',serif; font-style:italic;
+  font-size:17px;
+}
+.pct-cell{color:var(--ink-dim); font-size:14px; font-style:italic}
 .neg{color:var(--red)}
 
-/* Peer groups */
-.peer-card{padding:16px 20px; background:var(--bg-card);
-  border:1px solid var(--border-subtle); border-radius:12px; margin-bottom:12px}
+/* Peer groups — letter cards */
+.peer-card{
+  padding:18px 22px; background:var(--page-dim);
+  border:1px solid var(--rule-soft); margin-bottom:14px;
+}
 .peer-head{display:flex; justify-content:space-between; align-items:baseline;
-  margin-bottom:10px}
-.peer-portco{font-weight:500; font-size:15px}
-.peer-tag{font-size:11px; color:var(--blue); letter-spacing:.04em;
-  text-transform:uppercase}
-.peer-row{display:grid; grid-template-columns:1fr auto auto;
-  gap:14px; padding:6px 0; font-size:13px;
-  color:var(--text-secondary)}
-.peer-row .name{color:var(--text-primary)}
-.peer-row .score{font-variant-numeric:tabular-nums}
+  margin-bottom:12px; padding-bottom:8px;
+  border-bottom:1px solid var(--rule-soft)}
+.peer-portco{
+  font-family:'Cormorant Garamond',serif;
+  font-weight:500; font-size:19px; color:var(--ink);
+}
+.peer-tag{
+  font-variant:small-caps; letter-spacing:.14em;
+  font-size:11px; color:var(--blue); font-weight:600;
+}
+.peer-row{
+  display:grid; grid-template-columns:1fr auto auto;
+  gap:14px; padding:7px 0; font-size:14px;
+  color:var(--ink-dim); border-bottom:1px dotted var(--rule-mute);
+}
+.peer-row:last-child{border-bottom:none}
+.peer-row .name{color:var(--ink); font-style:italic}
+.peer-row .score{
+  font-family:'Cormorant Garamond',serif; font-weight:500;
+  font-feature-settings:"lnum","tnum"; color:var(--ink);
+}
 
-.footer{margin-top:64px; padding-top:24px;
-  border-top:1px solid var(--border-subtle); color:var(--text-muted);
-  font-size:12px; display:flex; justify-content:space-between}
-.disclaimer{margin-top:32px; padding:12px 16px; background:var(--bg-card);
-  border:1px solid var(--border-subtle); border-radius:8px;
-  color:var(--text-muted); font-size:12px; font-style:italic}
+.footer{
+  margin-top:72px; padding-top:24px;
+  border-top:1px solid var(--rule);
+  color:var(--ink-faint); font-size:12px; font-style:italic;
+  display:flex; justify-content:space-between;
+}
+.disclaimer{
+  margin-top:36px; padding:14px 18px;
+  background:var(--page-dim); border-left:2px solid var(--rule);
+  color:var(--ink-faint); font-size:13px; font-style:italic;
+  line-height:1.55;
+}
 """
 
 
@@ -304,7 +410,7 @@ def bx_report(
 <title>Cross-Portco Benchmark — {html.escape(corpus_id)}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Newsreader:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
 <style>{_CSS}</style>
 </head>
 <body>

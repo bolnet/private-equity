@@ -155,11 +155,17 @@
   }
   .ticker-num {
     font-family: 'Cormorant Garamond', serif;
-    font-size: 30px; font-weight: 500;
+    font-size: 32px; font-weight: 500;
     color: var(--ink); line-height: 1;
-    font-feature-settings: "lnum";
+    font-feature-settings: "lnum", "tnum";
   }
-  .ticker-num em { font-style: italic; color: var(--accent); font-weight: 400; }
+  .ticker-num em {
+    font-style: italic; color: var(--accent); font-weight: 500;
+  }
+  .ticker-pct {
+    font-style: italic; font-size: 20px; color: var(--accent);
+    font-weight: 500; margin-left: 1px;
+  }
   .ticker-sub {
     font-family: 'Newsreader', serif; font-style: italic; font-weight: 300;
     font-size: 11px; color: var(--ink-faint); margin-top: 5px;
@@ -561,22 +567,22 @@
     </div>
     <div class="ticker-item">
       <div class="ticker-label">Procurement spread</div>
-      <div class="ticker-num">$936M</div>
+      <div class="ticker-num"><em>$936M</em></div>
       <div class="ticker-sub">28 federal agencies, 132 vendors</div>
     </div>
     <div class="ticker-item">
       <div class="ticker-label">Plan drift</div>
-      <div class="ticker-num">$121.6M</div>
+      <div class="ticker-num"><em>$121.6M</em></div>
       <div class="ticker-sub">5 of 7 initiatives off-track</div>
     </div>
     <div class="ticker-item">
       <div class="ticker-label">CIM red-flags</div>
-      <div class="ticker-num">49</div>
+      <div class="ticker-num"><em>49</em></div>
       <div class="ticker-sub">single 10-K, section-cited</div>
     </div>
     <div class="ticker-item">
       <div class="ticker-label">Citation accuracy</div>
-      <div class="ticker-num">87<span style="font-size:18px">%</span></div>
+      <div class="ticker-num"><em>87<span class="ticker-pct">%</span></em></div>
       <div class="ticker-sub">across 13-memo eval corpus</div>
     </div>
     <div class="ticker-item">
@@ -652,8 +658,13 @@
       <div class="entry-finding"><strong>13 board memos rendered</strong> across 12 portcos. Eval corpus: 87% mean citation accuracy, 100% coverage, 100% consistency.</div>
       <form class="entry-form" data-tool="explain" data-example-report="explain_MortgageCo_board.html" novalidate>
         <label class="field">
-          <span class="field-label">OpportunityMap path</span>
-          <input type="text" name="opportunity_map_path" placeholder="finance_output/dx_report_MortgageCo.json" />
+          <span class="field-label">Portfolio Company ID</span>
+          <input type="text" name="portco_id" placeholder="e.g. MortgageCo" maxlength="40" />
+        </label>
+        <label class="field-file">
+          <span class="icon">⤴</span>
+          <span class="filename" data-default="Drop loans.csv + performance.csv (the same pair as DX)">Drop loans.csv + performance.csv (the same pair as DX)</span>
+          <input type="file" name="files" multiple accept=".csv" />
         </label>
         <label class="field">
           <span class="field-label">Audience</span>
@@ -679,17 +690,25 @@
           <h2 class="entry-name">Cross-Portco Benchmarking (BX)</h2>
         </div>
       </header>
-      <p class="entry-desc">Ingest N OpportunityMaps. Render a fund-level rank table, archetype index, peer groups by cosine similarity, and quarter-over-quarter persistence — the LP-letter exhibit no scorecard vendor ships.</p>
+      <p class="entry-desc">Roll up N portcos into a single fund-level rank table, archetype index, peer groups by cosine similarity, and quarter-over-quarter persistence — the LP-letter exhibit no scorecard vendor ships.</p>
       <div class="entry-finding"><strong>3 fund corpora shipped</strong> — 5-region Lending Club ($3.19M), 5-state CFPB HMDA ($183.83M), 7-portco mixed-vertical ($1.14B).</div>
       <form class="entry-form" data-tool="benchmark-corpus" data-example-report="bx_report_mixed_fund.html" novalidate>
         <label class="field">
-          <span class="field-label">Corpus ID</span>
+          <span class="field-label">Fund label</span>
           <input type="text" name="corpus_id" placeholder="e.g. fund_q1_2026" maxlength="40" />
         </label>
-        <label class="field-file">
-          <span class="icon">⤴</span>
-          <span class="filename" data-default="Drop N OpportunityMap JSON sidecars">Drop N OpportunityMap JSON sidecars</span>
-          <input type="file" name="json_paths" multiple accept=".json" />
+        <label class="field">
+          <span class="field-label">Pick a fund preset</span>
+          <select name="preset">
+            <option value="mixed_fund">Mixed-vertical fund — 7 portcos · $1.14B identifiable</option>
+            <option value="hmda_states">5-state HMDA mortgage fund — $184M identifiable</option>
+            <option value="regional_lenders_demo">5-region Lending Club fund — $3.19M identifiable</option>
+            <option value="">— or list portcos by ID below —</option>
+          </select>
+        </label>
+        <label class="field">
+          <span class="field-label">Portco IDs (comma-separated, optional)</span>
+          <input type="text" name="portco_ids" placeholder="e.g. MortgageCo, HMDA_GA, midwest_lender" />
         </label>
         <div class="actions">
           <button type="submit" class="run-btn">Build corpus</button>
@@ -779,13 +798,10 @@
           <span class="field-label">Portfolio Company ID</span>
           <input type="text" name="portco_id" placeholder="e.g. MortgageCo" maxlength="40" />
         </label>
-        <label class="field">
-          <span class="field-label">OpportunityMap path</span>
-          <input type="text" name="opportunity_map_path" placeholder="finance_output/dx_report_MortgageCo.json" />
-        </label>
-        <label class="field">
-          <span class="field-label">Optional: BX corpus path</span>
-          <input type="text" name="bx_corpus_path" placeholder="finance_output/bx_report_mixed_fund.json" />
+        <label class="field-file">
+          <span class="icon">⤴</span>
+          <span class="filename" data-default="Drop loans.csv + performance.csv (the portco's own data room)">Drop loans.csv + performance.csv (the portco's own data room)</span>
+          <input type="file" name="files" multiple accept=".csv" />
         </label>
         <div class="actions">
           <button type="submit" class="run-btn">Build proof pack</button>
@@ -1044,8 +1060,14 @@
     });
   });
 
-  // Form submission — POSTs to /api/<tool>; gracefully falls back to demo mode
+  // Form submission — POSTs to /api/<tool>, runs the live tool, and
+  // navigates the same tab to the freshly-rendered report. Every form on
+  // this page is wired to a backend endpoint in finance_mcp/web.py.
   document.querySelectorAll('.entry-form').forEach(form => {
+    // Cache original button text once.
+    const btn = form.querySelector('.run-btn');
+    btn.dataset.originalText = btn.textContent;
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const tool = form.dataset.tool;
@@ -1055,34 +1077,49 @@
 
       status.classList.remove('show', 'demo', 'success', 'running');
       status.classList.add('show', 'running');
-      status.innerHTML = `<em>Calling</em> <code>/api/${tool}</code> <em>…</em>`;
+      const t0 = performance.now();
+      let tickHandle = null;
+      const tick = () => {
+        const elapsed = ((performance.now() - t0) / 1000).toFixed(1);
+        status.innerHTML = `<em>Generating</em> <code>/api/${tool}</code> <em>… ${elapsed}s</em>`;
+      };
+      tick();
+      tickHandle = setInterval(tick, 200);
       button.disabled = true;
-      button.textContent = 'Running…';
+      button.textContent = 'Generating…';
 
       try {
         const fd = new FormData(form);
         const res = await fetch(`/api/${tool}`, { method: 'POST', body: fd });
-        if (res.ok) {
-          const data = await res.json();
-          status.classList.remove('running');
-          status.classList.add('success');
-          status.innerHTML = `<strong>Rendered.</strong> Open the report: <a href="${data.report_path || ('../../finance_output/' + exampleReport)}" target="_blank">${data.report_path || exampleReport}</a>`;
-        } else {
-          throw new Error(`HTTP ${res.status}`);
+        let data = null;
+        try { data = await res.json(); } catch (_) { /* non-JSON */ }
+
+        if (!res.ok || !(data && data.ok !== false)) {
+          const msg = (data && data.error) || `HTTP ${res.status}`;
+          throw new Error(msg);
         }
+
+        clearInterval(tickHandle);
+        status.classList.remove('running');
+        status.classList.add('success');
+        const targetUrl = data.report_url
+          || (data.report_path ? data.report_path : `../../finance_output/${exampleReport}`);
+        status.innerHTML = `<strong>Rendered.</strong> <a href="${targetUrl}" target="_blank">Opening the report…</a>`;
+
+        // Auto-navigate the same tab to the freshly-rendered report.
+        // Brief 600ms pause so the success state is visible before the jump.
+        setTimeout(() => { window.location.href = targetUrl; }, 600);
       } catch (err) {
+        clearInterval(tickHandle);
         status.classList.remove('running');
         status.classList.add('demo');
-        status.innerHTML = `<em>Backend not yet wired</em> — for this catalogue iteration, call the MCP tool directly from Claude Code, or open the pre-rendered example: <a href="../../finance_output/${exampleReport}" target="_blank">finance_output/${exampleReport}</a>`;
+        status.innerHTML = `<em>Generation failed:</em> <code>${(err && err.message) || err}</code>. ` +
+          `Open the cached example instead: <a href="../../finance_output/${exampleReport}" target="_blank">finance_output/${exampleReport}</a>`;
       } finally {
         button.disabled = false;
-        button.textContent = button.dataset.originalText || form.querySelector('.run-btn').textContent.replace('Running…', '').trim();
+        button.textContent = btn.dataset.originalText;
       }
     });
-
-    // Cache original button text
-    const btn = form.querySelector('.run-btn');
-    btn.dataset.originalText = btn.textContent;
   });
 
   // Smooth-scroll from contents to entries (optional UX nicety)
