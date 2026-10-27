@@ -2,7 +2,7 @@
 
 > ### → [**Open the live site: bolnet.github.io/private-equity**](https://bolnet.github.io/private-equity/) — twelve tools, eleven explainer videos, real public data
 >
-> Built and maintained by **[Surendra Singh](https://www.linkedin.com/in/surendrasingh/)** · Private Equity × AI subject-matter expert · available for operating-partner, advisor, and 90-day engagement work at PE firms.
+> Built and maintained by **[Surendra Singh](https://www.linkedin.com/in/singhsurendra/)**.
 
 > **A working toolkit for private-equity firms who want to turn AI from deck-slide into measurable portfolio value.**
 
@@ -190,4 +190,4 @@ MIT. See [LICENSE](LICENSE).
 
 ## About
 
-Built and maintained by [Surendra Singh](https://www.linkedin.com/in/surendrasingh/).
+Built and maintained by [Surendra Singh](https://www.linkedin.com/in/singhsurendra/).
